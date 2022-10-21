@@ -1,8 +1,6 @@
 import cv2
 import mediapipe as mp
 
-from handTracking.drawing.drawOnImage import drawPolyline
-
 
 class HandTracker:
     """
@@ -20,15 +18,15 @@ class HandTracker:
                                          self.track_con)
         self.mp_drawing = mp.solutions.drawing_utils
         self.mp_drawing_styles = mp.solutions.drawing_styles
-        self.data_points = []
+        # self.data_points = [] # used for drawing index finger
         self.results = []
 
     def handsFinder(self, image, draw=True):
         """
         function to process an image to get hand landmarks and draw them onto the image
         :param image: image which should be processed for hand detection
-        :param draw: optional flag, if something needs to be drawn onto the image
-        :return: image with drawn landmarks (and optionally something else)
+        :param draw: optional flag, if landmarks need to be drawn on image
+        :return: image (with optionally drawn landmarks)
         """
         image.flags.writeable = False  # temporarily disabled for performance
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # changed order of colors from BGR to RGB
@@ -38,6 +36,26 @@ class HandTracker:
         image.flags.writeable = True
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
 
+        # Iterate over landmarks and mark them on the hand in the image
+        if draw and self.results.multi_hand_landmarks:
+            for hand_landmarks in self.results.multi_hand_landmarks:
+                self.mp_drawing.draw_landmarks(
+                    image,
+                    hand_landmarks,
+                    self.mp_hands.HAND_CONNECTIONS,
+                    self.mp_drawing_styles.get_default_hand_landmarks_style(),
+                    self.mp_drawing_styles.get_default_hand_connections_style())
+
+        return image
+
+    def positionFinder(self, image, label="Right"):
+        """
+        function to find image coords of a certain hand
+        :param image: used to get width and height
+        :param label:"Right" or "Left" allowed
+        :return: landmark list of hand in form [landmark_id, x, y]
+        """
+        return_landmark_list = []
         if self.results.multi_hand_landmarks:
             h, w, _ = image.shape
             hand_landmarks_list = []
@@ -50,40 +68,19 @@ class HandTracker:
             for hand_landmarks in self.results.multi_hand_landmarks:
                 hand_landmarks_list.append(hand_landmarks)
 
-            # iterate over all stored hand landmarks with hand type data
+                # iterate over all stored hand landmarks with hand type data
             for hand_landmarks, hand_type in zip(hand_landmarks_list, hands_type):
-                self.mp_drawing.draw_landmarks(
-                    image,
-                    hand_landmarks,
-                    self.mp_hands.HAND_CONNECTIONS,
-                    self.mp_drawing_styles.get_default_hand_landmarks_style(),
-                    self.mp_drawing_styles.get_default_hand_connections_style())
+                if hand_type == label:
+                    for id, lm in enumerate(hand_landmarks.landmark):
+                        cx, cy = int(lm.x * w), int(lm.y * h)
+                        return_landmark_list.append([id, cx, cy])
 
-                if hand_type == 'Left':
-                    x = int(hand_landmarks.landmark[self.mp_hands.HandLandmark.INDEX_FINGER_TIP].x * w)
-                    y = int(hand_landmarks.landmark[self.mp_hands.HandLandmark.INDEX_FINGER_TIP].y * h)
-                    self.data_points.append((x, y))
+                    # x = int(hand_landmarks.landmark[self.mp_hands.HandLandmark.INDEX_FINGER_TIP].x * w)
+                    # y = int(hand_landmarks.landmark[self.mp_hands.HandLandmark.INDEX_FINGER_TIP].y * h)
+                    # self.data_points.append((x, y))
+                    #
+                    # draw polyline
+                    # if draw:
+                    #     drawPolyline(self.data_points, image)
 
-                # draw polyline
-                if draw:
-                    drawPolyline(self.data_points, image)
-
-        return image
-
-    def positionFinder(self, image, hand_no=0):
-        """
-        function to find image coords of a certain hand
-        :param image: used to get width and height
-        :param hand_no:
-        :return: landmark list of hand
-        """
-        landmark_list = []
-        if self.results.multi_hand_landmarks:
-            Hand = self.results.multi_hand_landmarks[hand_no]
-
-            for id, lm in enumerate(Hand.landmark):
-                h, w, c = image.shape
-                cx, cy = int(lm.x * w), int(lm.y * h)
-                landmark_list.append([id, cx, cy])
-
-        return landmark_list
+        return return_landmark_list
