@@ -1,12 +1,12 @@
 import cv2
 import mediapipe as mp
 
-from handTracking.drawing.drawOnImage import drawPolyline
+from hand_tracking.drawing.draw_on_image import draw_polyline
 
 
 class HandTracker:
     """
-    Class to initialise a hand tracker. Can be used to find the image coords of certain hand landmarks
+    Class to initialise a hand tracker. Can be used to find the image coordinates of certain hand landmarks
     """
 
     def __init__(self, mode=False, max_hands=2, detection_con=0.5, model_complexity=1, track_con=0.5):
@@ -23,7 +23,7 @@ class HandTracker:
         self.data_points = []  # used for drawing index finger
         self.results = []
 
-    def handsFinder(self, image, draw=True):
+    def hands_finder(self, image, draw=True):
         """
         function to process an image to get hand landmarks and draw them onto the image
         :param image: image which should be processed for hand detection
@@ -50,9 +50,9 @@ class HandTracker:
 
         return image
 
-    def positionFinder(self, image, label="Right"):
+    def position_finder(self, image, label="Right"):
         """
-        function to find image coords of a certain hand
+        function to find image coordinates of a certain hand
         :param image: used to get width and height
         :param label:"Right" or "Left" allowed
         :return: landmark list of hand in form [landmark_id, x, y]
@@ -73,7 +73,7 @@ class HandTracker:
                 # iterate over all stored hand landmarks with hand type data
             for hand_landmarks, hand_type in zip(hand_landmarks_list, hands_type):
                 if hand_type == label:
-                    for id, lm in enumerate(hand_landmarks.landmark):
+                    for lm in hand_landmarks.landmark:
                         cx, cy = int(lm.x * w), int(lm.y * h)
                         return_landmark_list.append([id, cx, cy])
 
@@ -81,7 +81,7 @@ class HandTracker:
                     y = int(hand_landmarks.landmark[self.mp_hands.HandLandmark.INDEX_FINGER_TIP].y * h)
                     self.data_points.append((x, y))
 
-                    # draw polyline
-                    drawPolyline(self.data_points, image)
+        # draw polyline
+        draw_polyline(self.data_points, image)
 
         return return_landmark_list
