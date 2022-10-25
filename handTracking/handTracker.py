@@ -1,6 +1,8 @@
 import cv2
 import mediapipe as mp
 
+from handTracking.drawing.drawOnImage import drawPolyline
+
 
 class HandTracker:
     """
@@ -18,7 +20,7 @@ class HandTracker:
                                          self.track_con)
         self.mp_drawing = mp.solutions.drawing_utils
         self.mp_drawing_styles = mp.solutions.drawing_styles
-        # self.data_points = [] # used for drawing index finger
+        self.data_points = []  # used for drawing index finger
         self.results = []
 
     def handsFinder(self, image, draw=True):
@@ -75,12 +77,11 @@ class HandTracker:
                         cx, cy = int(lm.x * w), int(lm.y * h)
                         return_landmark_list.append([id, cx, cy])
 
-                    # x = int(hand_landmarks.landmark[self.mp_hands.HandLandmark.INDEX_FINGER_TIP].x * w)
-                    # y = int(hand_landmarks.landmark[self.mp_hands.HandLandmark.INDEX_FINGER_TIP].y * h)
-                    # self.data_points.append((x, y))
-                    #
+                    x = int(hand_landmarks.landmark[self.mp_hands.HandLandmark.INDEX_FINGER_TIP].x * w)
+                    y = int(hand_landmarks.landmark[self.mp_hands.HandLandmark.INDEX_FINGER_TIP].y * h)
+                    self.data_points.append((x, y))
+
                     # draw polyline
-                    # if draw:
-                    #     drawPolyline(self.data_points, image)
+                    drawPolyline(self.data_points, image)
 
         return return_landmark_list
