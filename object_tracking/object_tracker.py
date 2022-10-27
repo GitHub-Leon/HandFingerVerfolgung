@@ -87,15 +87,16 @@ class ObjectTracker:
         :param boxes: list of boxes found
         :param confidences: list of confidences
         """
+
         for index in indexes.flatten():
             x, y, w, h = boxes[index]
             label = str(self.classes[class_ids[index]])
             confidence = str(round(confidences[index], 2))
 
             for device in self.device_boxes:
-                if device[0] == label:
-                    if device[0] < confidence:
-                        device = [label, confidence, (x, y, w, h)]
+                if device[0] == label and device[1] < confidence:
+                    self.device_boxes.remove(device)
+                    self.device_boxes.append([label, confidence, (x, y, w, h)])
 
-            if len(self.device_boxes) == 0 and label == "keyboard" or label == "mouse":
+            if len(self.device_boxes) == 0 and (label == "keyboard" or label == "mouse"):
                 self.device_boxes.append([label, confidence, (x, y, w, h)])
