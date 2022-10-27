@@ -19,15 +19,16 @@ def main():
             print("Ignoring empty frame.")
             continue
 
+        image = objectTracker.object_finder(cv2.flip(image, 1))  # flip image, to display selfie view
         image = handTracker.hands_finder(image)
         landmark_list = handTracker.position_finder(image, "Right")
-        image = objectTracker.object_finder(cv2.flip(image, 1))  # flip image, to display selfie view
+
 
         # TODO: append data to local list to display landmark (gets replaced with DB)
-        try:
-            test_data_points.append(landmark_list[8][2])
-        except IndexError:  # landmark moved out of screen
-            print("Landmark lost")
+        # try:
+        #     test_data_points.append(landmark_list[8][2])
+        # except IndexError:  # landmark moved out of screen
+        #     print("Landmark lost")
 
         # to draw polyline TODO: option to enable it
         # draw_polyline(test_data_points, image)
