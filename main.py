@@ -26,9 +26,12 @@ def main():
 
         # TODO: append data to local list to display landmark (gets replaced with DB)
         # try:
-        #     test_data_points.append(landmark_list[8][2])
+        #     x, y, z = landmark_list[8][2]
+        #     test_data_points.append((x, y))
+        #     print(z)
         # except IndexError:  # landmark moved out of screen
         #     print("Landmark lost")
+
 
         # to draw polyline TODO: option to enable it
         # draw_polyline(test_data_points, image)

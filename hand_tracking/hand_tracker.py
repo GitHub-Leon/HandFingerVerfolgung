@@ -73,7 +73,7 @@ class HandTracker:
             for hand_landmarks, hand_type in zip(hand_landmarks_list, hands_type):
                 if hand_type == label or label == "None":
                     for landmark_id, lm in enumerate(hand_landmarks.landmark):
-                        cx, cy = int(lm.x * w), int(lm.y * h)
-                        return_landmark_list.append([hand_type, landmark_id, (cx, cy)])
+                        cx, cy, z = int(lm.x * w), int(lm.y * h), lm.z
+                        return_landmark_list.append([hand_type, landmark_id, (cx, cy, z)])
 
         return return_landmark_list
