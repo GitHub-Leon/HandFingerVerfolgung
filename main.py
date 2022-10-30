@@ -29,9 +29,10 @@ def main():
             print("Ignoring empty frame.")
             continue
 
-        image = objectTracker.object_finder(cv2.flip(image, 1), drawObjectDetection)  # flip image, to display selfie view
-        image = handTracker.hands_finder(image, drawHandLandMarks)
+        image = handTracker.hands_finder(cv2.flip(image, 1), drawHandLandMarks)
         landmark_list = handTracker.position_finder(image, "Right")
+        objectTracker.mouse_finder(landmark_list)
+        image = objectTracker.object_finder(image, drawObjectDetection)  # flip image, to display selfie view
 
 
         # TODO: append data to local list to display landmark (gets replaced with DB)

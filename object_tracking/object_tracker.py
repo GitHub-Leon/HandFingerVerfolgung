@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+import win32api
 
 class ObjectTracker:
     def __init__(self, detection_con=0.1, detection_threshold=0.2):
@@ -10,8 +10,10 @@ class ObjectTracker:
         self.classes = self.load_classes()  # classes specified in coco.names
         self.colors = np.random.uniform(0, 255, size=(100, 3))  # color for bounding boxes
         self.font = cv2.FONT_HERSHEY_PLAIN  # font for bounding boxes
+        self.saved_pos = win32api.GetCursorPos()  # (x, y) tuple with cursor coords
 
-        self.device_boxes = []  # stores list of keyboard and mouse. Format: [label, confidence, (x, y, w, h)]
+        self.keyboard_box = []  # stores list of keyboard. Format: [label, confidence, (x, y, w, h)]
+        self.mouse_box = [(0, 0), (0, 0)]
 
     @staticmethod
     def load_classes():
@@ -65,9 +67,9 @@ class ObjectTracker:
         indexes = cv2.dnn.NMSBoxes(boxes, confidences, self.detection_threshold, 0.4)
 
         if len(indexes) > 0:
-            self.checkForBoxes(indexes, boxes, confidences, class_ids)
+            self.check_for_boxes(indexes, boxes, confidences, class_ids)
 
-        for device in self.device_boxes:
+        for device in self.keyboard_box:
             x, y, w, h = device[2]
             label = device[0]
             confidence = device[1]
@@ -77,9 +79,16 @@ class ObjectTracker:
                 cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
                 cv2.putText(image, label + " " + confidence, (x, y + 20), self.font, 2, (255, 255, 255), 2)
 
+        itx, ity = self.mouse_box[0]
+        mfx, mfy = self.mouse_box[1]
+
+        if draw:
+            cv2.rectangle(image, (itx, ity), (mfx, mfy), self.colors[60], 2)
+            cv2.putText(image, "mouse", (itx, ity + 20), self.font, 2, (255, 255, 255), 2)
+
         return image
 
-    def checkForBoxes(self, indexes, boxes, confidences, class_ids):
+    def check_for_boxes(self, indexes, boxes, confidences, class_ids):
         """
         Checks the boxes of each recognized pattern, and checks if the stored one has a lower confidence level and
         replaces it afterwards
@@ -93,10 +102,21 @@ class ObjectTracker:
             label = str(self.classes[class_ids[index]])
             confidence = str(round(confidences[index], 2))
 
-            for device in self.device_boxes:
+            for device in self.keyboard_box:
                 if device[0] == label and device[1] < confidence:
-                    self.device_boxes.remove(device)
-                    self.device_boxes.append([label, confidence, (x, y, w, h)])
+                    self.keyboard_box.remove(device)
+                    self.keyboard_box.append([label, confidence, (x, y, w, h)])
 
-            if len(self.device_boxes) == 0 and (label == "keyboard" or label == "mouse"):
-                self.device_boxes.append([label, confidence, (x, y, w, h)])
+            if len(self.keyboard_box) == 0 and label == "keyboard":
+                self.keyboard_box.append([label, confidence, (x, y, w, h)])
+
+
+    def mouse_finder(self, landmarks):
+        current_pos = win32api.GetCursorPos()
+        if self.saved_pos != current_pos:
+            self.saved_pos = current_pos
+
+            if len(landmarks) != 0:
+                itx, ity, _ = landmarks[8][2]  # index finger tip coords
+                mfx, mfy, _ = landmarks[9][2]  # middle finger mcp coords
+                self.mouse_box = [(itx, ity), (mfx, mfy)]
