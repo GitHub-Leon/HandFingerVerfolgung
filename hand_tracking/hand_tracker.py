@@ -27,6 +27,7 @@ class HandTracker:
         :param draw: optional flag, if landmarks need to be drawn on image
         :return: image (with optionally drawn landmarks)
         """
+
         image.flags.writeable = False  # temporarily disabled for performance
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # changed order of colors from BGR to RGB
         self.results = self.hands.process(image)
@@ -54,6 +55,7 @@ class HandTracker:
         :param label:"Right" or "Left" allowed, if both hands should be returned, default value "None" must be applied
         :return: landmark list of hand in form [landmark_id, x, y]
         """
+
         return_landmark_list = []
         if self.results.multi_hand_landmarks:
             h, w, _ = image.shape

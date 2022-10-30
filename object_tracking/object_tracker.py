@@ -4,6 +4,10 @@ import win32api
 
 
 class ObjectTracker:
+    """
+    Class to initialise a object tracker. Can be used to find the image coordinates of keyboard and mouse
+    """
+
     def __init__(self, detection_con=0.1, detection_threshold=0.2):
         self.detection_con = detection_con
         self.detection_threshold = detection_threshold
@@ -12,6 +16,7 @@ class ObjectTracker:
         self.colors = np.random.uniform(0, 255, size=(100, 3))  # color for bounding boxes
         self.font = cv2.FONT_HERSHEY_PLAIN  # font for bounding boxes
         self.saved_pos = win32api.GetCursorPos()  # (x, y) tuple with cursor coords
+        self.replacement_threshold = 0.9  # new keyboard box area shouldn't be less than 0.9x of old box area size
 
         self.keyboard_box = []  # stores list of keyboard. Format: [label, confidence, (x, y, w, h)]
         self.mouse_box = [(0, 0), (0, 0)]
@@ -22,6 +27,7 @@ class ObjectTracker:
         load the COCO class labels our YOLO model was trained on
         :return: list of classes
         """
+
         classes = []
         with open('object_tracking/yolo-coco/coco.names', 'r') as file:
             classes = file.read().splitlines()
@@ -78,14 +84,14 @@ class ObjectTracker:
 
             if draw:  # only draw boxes when option is enabled (Default)
                 cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
-                cv2.putText(image, label + " " + confidence, (x, y + 20), self.font, 2, (255, 255, 255), 2)
+                cv2.putText(image, label + " " + confidence, (x, y + 20), self.font, 2, color, 2)
 
         itx, ity = self.mouse_box[0]
         mfx, mfy = self.mouse_box[1]
 
         if draw and self.mouse_box[0][0] != 0:  # only draw, if mouse isn't at default values
             cv2.rectangle(image, (itx, ity), (mfx, mfy), self.colors[60], 2)
-            cv2.putText(image, "mouse", (itx, ity + 20), self.font, 2, (255, 255, 255), 2)
+            cv2.putText(image, "mouse", (itx, mfy), self.font, 2, self.colors[60], 2)
 
         return image
 
@@ -105,13 +111,20 @@ class ObjectTracker:
 
             for device in self.keyboard_box:
                 if device[0] == label and device[1] < confidence:
-                    self.keyboard_box.remove(device)
-                    self.keyboard_box.append([label, confidence, (x, y, w, h)])
+                    _, _, dw, dh = device[2]
+                    if (dw*dh * self.replacement_threshold) < (w * h):  # if the new box is far smaller than allowed, dont update it (possibility of false detection)
+                        self.keyboard_box.remove(device)
+                        self.keyboard_box.append([label, confidence, (x, y, w, h)])
 
             if len(self.keyboard_box) == 0 and label == "keyboard":
                 self.keyboard_box.append([label, confidence, (x, y, w, h)])
 
     def mouse_finder(self, landmarks):
+        """
+        This function gets the current cursor position and updates self.mouse_box with new landmark coords when moved
+        :param landmarks: list of hand landmarks to get finger position
+        """
+
         current_pos = win32api.GetCursorPos()
         if self.saved_pos != current_pos:
             self.saved_pos = current_pos
