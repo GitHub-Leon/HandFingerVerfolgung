@@ -1,5 +1,6 @@
-import cv2
 import configparser
+
+import cv2
 
 from hand_tracking.drawing.draw_on_image import draw_polyline
 from hand_tracking.hand_tracker import HandTracker
@@ -21,7 +22,6 @@ def main():
 
     test_data_points = []  # TODO: gets replaced with db prob
 
-
     while cap.isOpened:  # while we capture the video, analyse each frame
         success, image = cap.read()
 
@@ -34,7 +34,6 @@ def main():
         objectTracker.mouse_finder(landmark_list)
         image = objectTracker.object_finder(image, drawObjectDetection)  # flip image, to display selfie view
 
-
         # TODO: append data to local list to display landmark (gets replaced with DB)
         try:
             x, y, z = landmark_list[8][2]
@@ -42,7 +41,6 @@ def main():
         except IndexError:  # landmark moved out of screen
             if showDebugMessage:
                 print("Landmark lost")
-
 
         # to draw polyline
         if drawPolyLine:

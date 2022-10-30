@@ -10,4 +10,3 @@ def draw_polyline(data_points, image):
     """
     if len(data_points) != 0:  # draws line where the index finger is
         cv2.polylines(image, [np.array(data_points)], 0, (255, 255, 255), 2)
-

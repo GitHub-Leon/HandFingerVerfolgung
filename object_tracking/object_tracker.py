@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 import win32api
 
+
 class ObjectTracker:
     def __init__(self, detection_con=0.1, detection_threshold=0.2):
         self.detection_con = detection_con
@@ -109,7 +110,6 @@ class ObjectTracker:
 
             if len(self.keyboard_box) == 0 and label == "keyboard":
                 self.keyboard_box.append([label, confidence, (x, y, w, h)])
-
 
     def mouse_finder(self, landmarks):
         current_pos = win32api.GetCursorPos()

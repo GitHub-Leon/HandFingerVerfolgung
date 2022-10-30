@@ -1,8 +1,6 @@
 import cv2
 import mediapipe as mp
 
-from hand_tracking.drawing.draw_on_image import draw_polyline
-
 
 class HandTracker:
     """
