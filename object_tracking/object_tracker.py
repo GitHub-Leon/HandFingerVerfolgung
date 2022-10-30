@@ -83,7 +83,7 @@ class ObjectTracker:
         itx, ity = self.mouse_box[0]
         mfx, mfy = self.mouse_box[1]
 
-        if draw:
+        if draw and self.mouse_box[0][0] != 0:  # only draw, if mouse isn't at default values
             cv2.rectangle(image, (itx, ity), (mfx, mfy), self.colors[60], 2)
             cv2.putText(image, "mouse", (itx, ity + 20), self.font, 2, (255, 255, 255), 2)
 
