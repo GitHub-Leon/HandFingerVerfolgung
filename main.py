@@ -52,9 +52,16 @@ def main():
         cv2.imshow("Hand", hsv.copy())
         # lower_yellow = np.array([20, 0, 0])
         # upper_yellow = np.array([25, 255, 255])
-        lower_yellow = np.array([178, 14, 58])
-        upper_yellow = np.array([255, 21, 51])
+        lower_yellow = np.array([50, 50, 50])
+        upper_yellow = np.array([90, 210, 210])
         mask_yellow = cv2.inRange(hsv, lower_yellow, upper_yellow)
+
+        # # define kernel size
+        # kernel = np.ones((2, 2), np.uint8)
+        # # Remove unnecessary noise from mask
+        # mask_yellow = cv2.morphologyEx(mask_yellow, cv2.MORPH_CLOSE, kernel)
+        # mask_yellow = cv2.morphologyEx(mask_yellow, cv2.MORPH_OPEN, kernel)
+
         res_yellow = cv2.bitwise_and(image, image, mask=mask_yellow)
         gray_yellow = cv2.cvtColor(res_yellow, cv2.COLOR_BGR2GRAY)
         _, thresh_yellow = cv2.threshold(gray_yellow, 10, 255, cv2.THRESH_BINARY)
