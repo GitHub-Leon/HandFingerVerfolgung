@@ -110,11 +110,14 @@ class ObjectTracker:
             confidence = str(round(confidences[index], 2))
 
             for device in self.keyboard_box:
-                if device[0] == label and device[1] < confidence:
-                    _, _, dw, dh = device[2]
-                    if (dw*dh * self.replacement_threshold) < (w * h):  # if the new box is far smaller than allowed, dont update it (possibility of false detection)
-                        self.keyboard_box.remove(device)
-                        self.keyboard_box.append([label, confidence, (x, y, w, h)])
+                if device[0] == label:
+                    dx, dy, dw, dh = device[2]
+
+                    if (x > dx*1.2 or x < dx*0.8 or y > dy*1.2 or y < dy*0.8) or device[1] < confidence:  # check if detected keyboard is way off currently saved one or if the confidence is higher than the saved one
+                        if (dw * dh * self.replacement_threshold) < (w * h) < (dw * dh * ((1 - self.replacement_threshold) + 1)):  # if the new box is far smaller than allowed, dont update it (possibility of false detection)
+                            self.keyboard_box.remove(device)
+                            self.keyboard_box.append([label, confidence, (x, y, w, h)])
+                        break
 
             if len(self.keyboard_box) == 0 and label == "keyboard":
                 self.keyboard_box.append([label, confidence, (x, y, w, h)])
