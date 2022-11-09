@@ -119,7 +119,7 @@ class ObjectTracker:
             if len(self.keyboard_box) == 0 and label == "keyboard":
                 self.keyboard_box.append([label, confidence, (x, y, w, h)])
 
-    def mouse_finder(self, landmarks, image):
+    def mouse_finder(self, landmarks, image, drawDetectedColor):
         """
         This function gets the current cursor position and updates self.mouse_box with new landmark coords when moved
         If it finds a color point, which indicates our mouse, it uses this instead
@@ -131,9 +131,17 @@ class ObjectTracker:
         lower_color = np.array([170, 80, 80])
         upper_color = np.array([190, 255, 255])
 
+        # converts the image to mask the colors defined above and get all the points of the color
         hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         mask_color = cv2.inRange(hsv, lower_color, upper_color)
         points = cv2.findNonZero(mask_color)
+
+        if drawDetectedColor:  # draws the contours of the detected color
+            res_color = cv2.bitwise_and(image, image, mask=mask_color)
+            gray_color = cv2.cvtColor(res_color, cv2.COLOR_BGR2GRAY)
+            _, thresh_color = cv2.threshold(gray_color, 10, 255, cv2.THRESH_BINARY)
+            contours_color, hierarchy1 = cv2.findContours(thresh_color, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(image, contours_color, -1, (0, 0, 255), 2)
 
         if points is not None and len(points) > 50:  # threshold for other color points on screen
             avg = np.mean(points, axis=0)  # get position of avg point
