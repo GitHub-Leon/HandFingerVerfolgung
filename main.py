@@ -52,18 +52,27 @@ def main():
         cv2.imshow("Hand", hsv.copy())
         # lower_yellow = np.array([20, 0, 0])
         # upper_yellow = np.array([25, 255, 255])
-        lower_yellow = np.array([50, 50, 50])
-        upper_yellow = np.array([90, 210, 210])
-        mask_yellow = cv2.inRange(hsv, lower_yellow, upper_yellow)
+        lower_color = np.array([170, 80, 80])
+        upper_color = np.array([190, 255, 255])
+        mask_color = cv2.inRange(hsv, lower_color, upper_color)
+        res_color = cv2.bitwise_and(image, image, mask=mask_color)
+        points = cv2.findNonZero(mask_color)
 
+        if points is not None:
+            if (len(points > 1)):
+                avg = np.mean(points, axis=0)
+                cv2.rectangle(image, (int(avg[0][0] - 10), int(avg[0][1] - 10)), (int(avg[0][0] + 10), int(avg[0][1] + 10)), [100, 100, 100], 2)
+
+
+        cv2.imshow("mask", mask_color)
         # # define kernel size
-        # kernel = np.ones((2, 2), np.uint8)
+        # kernel = np.ones((7, 7), np.uint8)
         # # Remove unnecessary noise from mask
-        # mask_yellow = cv2.morphologyEx(mask_yellow, cv2.MORPH_CLOSE, kernel)
-        # mask_yellow = cv2.morphologyEx(mask_yellow, cv2.MORPH_OPEN, kernel)
+        # mask_color = cv2.morphologyEx(mask_color, cv2.MORPH_CLOSE, kernel)
+        # mask_color = cv2.morphologyEx(mask_color, cv2.MORPH_OPEN, kernel)
 
-        res_yellow = cv2.bitwise_and(image, image, mask=mask_yellow)
-        gray_yellow = cv2.cvtColor(res_yellow, cv2.COLOR_BGR2GRAY)
+
+        gray_yellow = cv2.cvtColor(res_color, cv2.COLOR_BGR2GRAY)
         _, thresh_yellow = cv2.threshold(gray_yellow, 10, 255, cv2.THRESH_BINARY)
         contours_yellow, hierarhy3 = cv2.findContours(thresh_yellow, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         cv2.drawContours(image, contours_yellow, -1, (0, 0, 255), 2)
