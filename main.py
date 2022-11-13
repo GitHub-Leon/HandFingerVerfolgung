@@ -5,6 +5,7 @@ import cv2
 from hand_tracking.drawing.draw_on_image import draw_polyline
 from hand_tracking.hand_tracker import HandTracker
 from object_tracking.object_tracker import ObjectTracker
+import numpy as np
 
 
 def main():
@@ -19,6 +20,7 @@ def main():
     drawHandLandMarks = config['DEFAULT'].getboolean('drawHandLandMarks')
     drawObjectDetection = config['DEFAULT'].getboolean('drawObjectDetection')
     showDebugMessage = config['DEFAULT'].getboolean('showDebugMessages')
+    drawDetectedColor = config['DEFAULT'].getboolean('drawDetectedColor')
 
     test_data_points = []  # TODO: gets replaced with db prob
 
@@ -31,7 +33,7 @@ def main():
 
         image = handTracker.hands_finder(cv2.flip(image, 1), drawHandLandMarks)
         landmark_list = handTracker.position_finder(image, "Right")
-        objectTracker.mouse_finder(landmark_list)
+        objectTracker.mouse_finder(landmark_list, image, drawDetectedColor)
         image = objectTracker.object_finder(image, drawObjectDetection)  # flip image, to display selfie view
 
         # TODO: append data to local list to display landmark (gets replaced with DB)

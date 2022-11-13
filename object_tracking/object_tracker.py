@@ -86,12 +86,12 @@ class ObjectTracker:
                 cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
                 cv2.putText(image, label + " " + confidence, (x, y + 20), self.font, 2, color, 2)
 
-        itx, ity = self.mouse_box[0]
-        mfx, mfy = self.mouse_box[1]
+        x_1, y_1 = self.mouse_box[0]
+        x_2, y_2 = self.mouse_box[1]
 
         if draw and self.mouse_box[0][0] != 0:  # only draw, if mouse isn't at default values
-            cv2.rectangle(image, (itx, ity), (mfx, mfy), self.colors[60], 2)
-            cv2.putText(image, "mouse", (itx, mfy), self.font, 2, self.colors[60], 2)
+            cv2.rectangle(image, (x_1, y_1), (x_2, y_2), self.colors[60], 2)
+            cv2.putText(image, "mouse", (x_1, y_2), self.font, 2, self.colors[60], 2)
 
         return image
 
@@ -110,26 +110,61 @@ class ObjectTracker:
             confidence = str(round(confidences[index], 2))
 
             for device in self.keyboard_box:
-                if device[0] == label and device[1] < confidence:
-                    _, _, dw, dh = device[2]
-                    if (dw*dh * self.replacement_threshold) < (w * h):  # if the new box is far smaller than allowed, dont update it (possibility of false detection)
-                        self.keyboard_box.remove(device)
-                        self.keyboard_box.append([label, confidence, (x, y, w, h)])
+                if device[0] == label:
+                    dx, dy, dw, dh = device[2]
+
+                    if (x > dx*1.2 or x < dx*0.8 or y > dy*1.2 or y < dy*0.8) or device[1] < confidence:  # check if detected keyboard is way off currently saved one or if the confidence is higher than the saved one
+                        if (dw * dh * self.replacement_threshold) < (w * h) < (dw * dh * ((1 - self.replacement_threshold) + 1)):  # if the new box is far smaller than allowed, dont update it (possibility of false detection)
+                            self.keyboard_box.remove(device)
+                            self.keyboard_box.append([label, confidence, (x, y, w, h)])
+                        break
 
             if len(self.keyboard_box) == 0 and label == "keyboard":
                 self.keyboard_box.append([label, confidence, (x, y, w, h)])
 
-    def mouse_finder(self, landmarks):
+    def mouse_finder(self, landmarks, image, drawDetectedColor):
         """
         This function gets the current cursor position and updates self.mouse_box with new landmark coords when moved
+        If it finds a color point, which indicates our mouse, it uses this instead
+        :param image: Image that gets processed to search color points
         :param landmarks: list of hand landmarks to get finger position
         """
 
-        current_pos = win32api.GetCursorPos()
-        if self.saved_pos != current_pos:
-            self.saved_pos = current_pos
+        # defined upper and lower bounds on the color spectrum for the color we are searching for
+        lower_color = np.array([170, 80, 80])
+        upper_color = np.array([190, 255, 255])
 
-            if len(landmarks) != 0:
-                itx, ity, _ = landmarks[8][2]  # index finger tip coords
-                mfx, mfy, _ = landmarks[9][2]  # middle finger mcp coords
-                self.mouse_box = [(itx, ity), (mfx, mfy)]
+        # converts the image to mask the colors defined above and get all the points of the color
+        hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+        mask_color = cv2.inRange(hsv, lower_color, upper_color)
+        points = cv2.findNonZero(mask_color)
+
+        if drawDetectedColor:  # draws the contours of the detected color
+            res_color = cv2.bitwise_and(image, image, mask=mask_color)
+            gray_color = cv2.cvtColor(res_color, cv2.COLOR_BGR2GRAY)
+            _, thresh_color = cv2.threshold(gray_color, 10, 255, cv2.THRESH_BINARY)
+            contours_color, hierarchy1 = cv2.findContours(thresh_color, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            cv2.drawContours(image, contours_color, -1, (0, 0, 255), 2)
+
+        if points is not None and len(points) > 50:  # threshold for other color points on screen
+            avg = np.mean(points, axis=0)  # get position of avg point
+            self.mouse_box = [(int(avg[0][0] - 30), int(avg[0][1] + 60)), (int(avg[0][0] + 30), int(avg[0][1] - 10))]
+        else:
+            current_pos = win32api.GetCursorPos()
+            if self.saved_pos != current_pos:
+                self.saved_pos = current_pos
+
+                if len(landmarks) != 0:
+                    itx, ity, _ = landmarks[8][2]  # index finger tip coords
+                    imx, imy, _ = landmarks[5][2]  # index finger mcp coords
+                    mtx, mty, _ = landmarks[12][2]  # middle finger tip coords
+                    mmx, mmy, _ = landmarks[9][2]  # middle finger mcp coords
+                    ttx, tty, _ = landmarks[4][2]  # thumb tip coords
+
+                    # get outer coords to define a clean rectangle for the mouse
+                    x_1 = min(itx, imx, ttx)
+                    y_1 = max(ity, mty, tty)
+                    x_2 = max(mtx, mmx)
+                    y_2 = min(mmy, imy)
+
+                    self.mouse_box = [(x_1, y_1), (x_2, y_2)]
