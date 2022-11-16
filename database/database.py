@@ -16,6 +16,8 @@ class Database:
             self.coordinates_id = 0
             self.mouse_id = 0
             self.mouse_coordinates_id = 0
+            self.keyboard_id = 0
+            self.keyboard_coordinates_id = 0
         else:  # else increment last stored values
             self.session_id = self.cursor.execute("""SELECT session_id FROM entry ORDER BY session_id DESC LIMIT 1""").fetchone()[0] + 1
             self.entry_id = self.cursor.execute("""SELECT id FROM entry ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
@@ -23,7 +25,9 @@ class Database:
             self.landmark_typ_id = self.cursor.execute("""SELECT id FROM landmarkTypes ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
             self.coordinates_id = self.cursor.execute("""SELECT id FROM coordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
             self.mouse_id = self.cursor.execute("""SELECT id FROM mouse ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            self.keyboard_id = self.cursor.execute("""SELECT id FROM keyboard ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
             self.mouse_coordinates_id = self.cursor.execute("""SELECT id FROM mouseCoordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            self.keyboard_coordinates_id = self.cursor.execute("""SELECT id FROM keyboardCoordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
 
         self.__create_tables()
 
@@ -33,24 +37,28 @@ class Database:
         """
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS entry(id NOT NULL PRIMARY KEY , time, session_id)""")
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS mouse(id NOT NULL PRIMARY KEY , entry_id, FOREIGN KEY(entry_id) REFERENCES entry(id))""")
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS keyboard(id NOT NULL PRIMARY KEY , entry_id, FOREIGN KEY(entry_id) REFERENCES entry(id))""")
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS hand(id NOT NULL PRIMARY KEY , entry_id, is_right, FOREIGN KEY(entry_id) REFERENCES entry(id))""")
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS coordinates(id NOT NULL PRIMARY KEY , x, y, z)""")
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS landmarks(hand_id, landmark_typ_id, coordinates_id, FOREIGN KEY(hand_id) REFERENCES hand(id), FOREIGN KEY(landmark_typ_id) REFERENCES landmarkTypes(id), FOREIGN KEY(coordinates_id) REFERENCES coordinates(id))""")
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS mouseCoordinates(id NOT NULL PRIMARY KEY , mouse_id, coordinates_id, FOREIGN KEY(mouse_id) REFERENCES mouse(id), FOREIGN KEY(coordinates_id) REFERENCES coordinates(id))""")
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS keyboardCoordinates(id NOT NULL PRIMARY KEY , keyboard_id, coordinates_id, FOREIGN KEY(keyboard_id) REFERENCES keyboard(id), FOREIGN KEY(coordinates_id) REFERENCES coordinates(id))""")
 
         self.__create_landmark_types_table()
 
         self.con.commit()
 
-    def database_entry(self, hand_landmarks, mouse_box):
+    def database_entry(self, hand_landmarks, mouse_box, keyboard_box):
         """
         main function to create a database entry
+        :param keyboard_box: entry of keyboard box in format: [['keyboard', '0.29', (73, 245, 404, 144)]]
         :param hand_landmarks: all landmarks in format: [['Right', 3, (537, 239, -0.07019183784723282)], ... ]
         :param mouse_box: coordinates of mouse box in format [(x1, y1), (x2, y2)]
         """
         self.__entry_entry()
         self.__landmarks_entry(hand_landmarks)
         self.__mouse_coordinates_entry(mouse_box)
+        self.__keyboard_coordinates_entry(keyboard_box)
 
         self.con.commit()
 
@@ -66,6 +74,20 @@ class Database:
         """entry for mouse [mouse_id, entry_id]"""
         self.cursor.execute("""INSERT INTO mouse VALUES (?, ?)""", (self.mouse_id, self.entry_id-1))
         self.mouse_id = self.mouse_id + 1
+
+    def __keyboard_coordinates_entry(self, keyboard_box):
+        """entry for keyboard coordinates [keyboard_coordinates_id, keyboard_id, coordinates_id]"""
+        self.__keyboard_entry()
+        keyboard_coords = [(keyboard_box[0][2][0], keyboard_box[0][2][1]), (keyboard_box[0][2][0] + keyboard_box[0][2][2], keyboard_box[0][2][1] + keyboard_box[0][2][3])]
+        for keyboard_coord in keyboard_coords:
+            self.__coordinates_entry(keyboard_coord[0], keyboard_coord[1], -1)
+            self.cursor.execute("""INSERT INTO keyboardCoordinates VALUES (?, ?, ?)""", (self.keyboard_coordinates_id, self.keyboard_id-1, self.coordinates_id-1))
+            self.keyboard_coordinates_id = self.keyboard_coordinates_id + 1
+
+    def __keyboard_entry(self):
+        """entry for keyboard [keyboard_id, entry_id]"""
+        self.cursor.execute("""INSERT INTO keyboard VALUES (?, ?)""", (self.keyboard_id, self.entry_id-1))
+        self.keyboard_id = self.keyboard_id + 1
 
     def __entry_entry(self):
         """entry for entry [id, timestamp, session_id]"""
