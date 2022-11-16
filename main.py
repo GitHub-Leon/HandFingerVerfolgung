@@ -33,8 +33,7 @@ def main():
         landmark_list = handTracker.position_finder(image)
         objectTracker.mouse_finder(landmark_list, image, drawDetectedColor)
         image = objectTracker.object_finder(image, drawObjectDetection)  # flip image, to display selfie view
-
-        database.database_entry(landmark_list)  # log everything in DB
+        database.database_entry(landmark_list, objectTracker.mouse_box)  # log everything in DB
 
         # to draw polyline
         # if drawPolyLine:
