@@ -25,7 +25,10 @@ class Database:
             self.landmark_typ_id = self.cursor.execute("""SELECT id FROM landmarkTypes ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
             self.coordinates_id = self.cursor.execute("""SELECT id FROM coordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
             self.mouse_id = self.cursor.execute("""SELECT id FROM mouse ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
-            self.keyboard_id = self.cursor.execute("""SELECT id FROM keyboard ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            try:
+                self.keyboard_id = self.cursor.execute("""SELECT id FROM keyboard ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.keyboard_id = 0
             self.mouse_coordinates_id = self.cursor.execute("""SELECT id FROM mouseCoordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
             self.keyboard_coordinates_id = self.cursor.execute("""SELECT id FROM keyboardCoordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
 
@@ -77,12 +80,13 @@ class Database:
 
     def __keyboard_coordinates_entry(self, keyboard_box):
         """entry for keyboard coordinates [keyboard_coordinates_id, keyboard_id, coordinates_id]"""
-        self.__keyboard_entry()
-        keyboard_coords = [(keyboard_box[0][2][0], keyboard_box[0][2][1]), (keyboard_box[0][2][0] + keyboard_box[0][2][2], keyboard_box[0][2][1] + keyboard_box[0][2][3])]
-        for keyboard_coord in keyboard_coords:
-            self.__coordinates_entry(keyboard_coord[0], keyboard_coord[1], -1)
-            self.cursor.execute("""INSERT INTO keyboardCoordinates VALUES (?, ?, ?)""", (self.keyboard_coordinates_id, self.keyboard_id-1, self.coordinates_id-1))
-            self.keyboard_coordinates_id = self.keyboard_coordinates_id + 1
+        if keyboard_box:
+            self.__keyboard_entry()
+            keyboard_coords = [(keyboard_box[0][2][0], keyboard_box[0][2][1]), (keyboard_box[0][2][0] + keyboard_box[0][2][2], keyboard_box[0][2][1] + keyboard_box[0][2][3])]
+            for keyboard_coord in keyboard_coords:
+                self.__coordinates_entry(keyboard_coord[0], keyboard_coord[1], -1)
+                self.cursor.execute("""INSERT INTO keyboardCoordinates VALUES (?, ?, ?)""", (self.keyboard_coordinates_id, self.keyboard_id-1, self.coordinates_id-1))
+                self.keyboard_coordinates_id = self.keyboard_coordinates_id + 1
 
     def __keyboard_entry(self):
         """entry for keyboard [keyboard_id, entry_id]"""
