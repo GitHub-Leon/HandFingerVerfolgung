@@ -2,10 +2,9 @@ import configparser
 
 import cv2
 
-from hand_tracking.drawing.draw_on_image import draw_polyline
+from database.database import Database
 from hand_tracking.hand_tracker import HandTracker
 from object_tracking.object_tracker import ObjectTracker
-import numpy as np
 
 
 def main():
@@ -13,6 +12,7 @@ def main():
     handTracker = HandTracker()
     objectTracker = ObjectTracker()
     config = configparser.ConfigParser()
+    database = Database()
 
     config.read('config.ini')
     showImg = config['DEFAULT'].getboolean('showImg')
@@ -22,8 +22,6 @@ def main():
     showDebugMessage = config['DEFAULT'].getboolean('showDebugMessages')
     drawDetectedColor = config['DEFAULT'].getboolean('drawDetectedColor')
 
-    test_data_points = []  # TODO: gets replaced with db prob
-
     while cap.isOpened:  # while we capture the video, analyse each frame
         success, image = cap.read()
 
@@ -32,27 +30,20 @@ def main():
             continue
 
         image = handTracker.hands_finder(cv2.flip(image, 1), drawHandLandMarks)
-        landmark_list = handTracker.position_finder(image, "Right")
+        landmark_list = handTracker.position_finder(image)
         objectTracker.mouse_finder(landmark_list, image, drawDetectedColor)
         image = objectTracker.object_finder(image, drawObjectDetection)  # flip image, to display selfie view
-
-        # TODO: append data to local list to display landmark (gets replaced with DB)
-        try:
-            x, y, z = landmark_list[8][2]
-            test_data_points.append((x, y))
-        except IndexError:  # landmark moved out of screen
-            if showDebugMessage:
-                print("Landmark lost")
+        database.database_entry(landmark_list, objectTracker.mouse_box, objectTracker.keyboard_box)  # log everything in DB
 
         # to draw polyline
-        if drawPolyLine:
-            draw_polyline(test_data_points, image)
+        # if drawPolyLine:
+        #     draw_polyline(test_data_points, image)
 
         # Flip the image horizontally for a selfie-view display.
         if showImg:
             cv2.imshow("Hand- und Fingerverfolgung", image)
 
-        cv2.waitKey(30)  # frame updates in ms
+        cv2.waitKey(30)  # frame updates per second
 
     cap.release()
 
