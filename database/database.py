@@ -30,7 +30,10 @@ class Database:
             except Exception:
                 self.keyboard_id = 0
             self.mouse_coordinates_id = self.cursor.execute("""SELECT id FROM mouseCoordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
-            self.keyboard_coordinates_id = self.cursor.execute("""SELECT id FROM keyboardCoordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            try:
+                self.keyboard_coordinates_id = self.cursor.execute("""SELECT id FROM keyboardCoordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.keyboard_coordinates_id = 0
 
         self.__create_tables()
 
