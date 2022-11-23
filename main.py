@@ -5,10 +5,17 @@ import cv2
 from database.database import Database
 from hand_tracking.hand_tracker import HandTracker
 from object_tracking.object_tracker import ObjectTracker
+from hand_tracking.drawing.plot import plot_data
 
 
 def main():
-    cap = cv2.VideoCapture(0)  # capture live webcam frames
+    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # capture live webcam frames
+    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('m', 'j', 'p', 'g'))
+    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
+    cap.set(cv2.CAP_PROP_FPS, 30.0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+
     handTracker = HandTracker()
     objectTracker = ObjectTracker()
     config = configparser.ConfigParser()
@@ -38,6 +45,13 @@ def main():
         # to draw polyline
         # if drawPolyLine:
         #     draw_polyline(test_data_points, image)
+
+        # to draw plot of z values
+        if landmark_list is not None:
+            try:
+                plot_data(landmark_list[8][2][2])
+            except IndexError:
+                pass
 
         # Flip the image horizontally for a selfie-view display.
         if showImg:
