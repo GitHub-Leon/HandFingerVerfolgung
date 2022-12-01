@@ -3,6 +3,7 @@ import configparser
 import cv2
 
 from database.database import Database
+from hand_tracking.drawing.draw_on_image import draw_polyline
 from hand_tracking.hand_tracker import HandTracker
 from object_tracking.object_tracker import ObjectTracker
 from hand_tracking.drawing.plot import plot_data
@@ -28,6 +29,9 @@ def main():
     drawObjectDetection = config['DEFAULT'].getboolean('drawObjectDetection')
     showDebugMessage = config['DEFAULT'].getboolean('showDebugMessages')
     drawDetectedColor = config['DEFAULT'].getboolean('drawDetectedColor')
+    drawPictureProcessCounter = config['DEFAULT'].getboolean('drawPictureProcessCounter')
+
+    cv2_count = 0  # only needed to draw picture process count on image when debugging
 
     while cap.isOpened:  # while we capture the video, analyse each frame
         success, image = cap.read()
@@ -43,15 +47,21 @@ def main():
         database.database_entry(landmark_list, objectTracker.mouse_box, objectTracker.keyboard_box)  # log everything in DB
 
         # to draw polyline
-        # if drawPolyLine:
-        #     draw_polyline(test_data_points, image)
+        if drawPolyLine:
+            draw_polyline(landmark_list[0][2][2], image)
 
         # to draw plot of z values
         if landmark_list is not None:
             try:
-                plot_data(landmark_list[8][2][2])
+                plot_data(landmark_list[0][2][2])
             except IndexError:
                 pass
+
+
+        # show number of processed picture on screen
+        if drawPictureProcessCounter:
+            cv2.putText(image, str(cv2_count), (50, 50), cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 0), 2)
+            cv2_count = cv2_count + 1
 
         # Flip the image horizontally for a selfie-view display.
         if showImg:
