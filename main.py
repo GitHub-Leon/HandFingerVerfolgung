@@ -48,12 +48,12 @@ def main():
 
         # to draw polyline
         if drawPolyLine:
-            draw_polyline(landmark_list[0][2][2], image)
+            draw_polyline(landmark_list, image)
 
         # to draw plot of z values
         if landmark_list is not None:
             try:
-                plot_data(landmark_list[0][2][2])
+                plot_data(landmark_list)
             except IndexError:
                 pass
 
