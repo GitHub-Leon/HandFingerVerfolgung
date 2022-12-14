@@ -9,5 +9,5 @@ def draw_polyline(data_points, image):
     :param image: image/frame on which the polyline should be drawn
     """
 
-    if len(data_points) != 0:  # draws line where the index finger is
-        cv2.polylines(image, [np.array(data_points)], 0, (255, 255, 255), 2)
+    if len(data_points[0][2][2]) != 0:  # draws line where the index finger is
+        cv2.polylines(image, [np.array(data_points[0][2][2])], 0, (255, 255, 255), 2)
