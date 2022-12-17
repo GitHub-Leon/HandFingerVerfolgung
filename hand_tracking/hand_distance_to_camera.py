@@ -34,7 +34,7 @@ class HandDistanceToCamera:
                     left.append(landmark)
 
         # check if the focal lengths have been initialized, if not, get the pixel distance for reference
-        if len(left) != 0:
+        if len(left) == 3:
             if self.left_focal_length_5_17 is None or self.left_focal_length_0_17 is None:
                 self.get_pixel_distance(left, 'Left', True)
                 if self.showDebugMessage:
@@ -52,7 +52,7 @@ class HandDistanceToCamera:
             elif distance_in_mm_left_5_17 < self.KNOWN_DISTANCE:  # if hand is rotated on the y axis
                 left_distance = distance_in_mm_left_5_17
 
-        if len(right) != 0:
+        if len(right) == 3:
             if self.right_focal_length_5_17 is None or self.right_focal_length_0_17 is None:
                 self.get_pixel_distance(right, 'Right', True)
                 if self.showDebugMessage:
