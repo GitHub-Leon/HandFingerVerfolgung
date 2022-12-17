@@ -6,7 +6,8 @@ from database.database import Database
 from hand_tracking.drawing.draw_on_image import draw_polyline
 from hand_tracking.hand_tracker import HandTracker
 from object_tracking.object_tracker import ObjectTracker
-from hand_tracking.drawing.plot import plot_data
+from hand_tracking.drawing.plot import plot_data, plot_distance
+from hand_tracking.hand_distance_to_camera import HandDistanceToCamera
 
 
 def main():
@@ -17,10 +18,8 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
-    handTracker = HandTracker()
-    objectTracker = ObjectTracker()
+
     config = configparser.ConfigParser()
-    database = Database()
 
     config.read('config.ini')
     showImg = config['DEFAULT'].getboolean('showImg')
@@ -30,6 +29,12 @@ def main():
     showDebugMessage = config['DEFAULT'].getboolean('showDebugMessages')
     drawDetectedColor = config['DEFAULT'].getboolean('drawDetectedColor')
     drawPictureProcessCounter = config['DEFAULT'].getboolean('drawPictureProcessCounter')
+
+    database = Database()
+    hand_distance_to_camera = HandDistanceToCamera(showDebugMessage)
+    handTracker = HandTracker()
+    objectTracker = ObjectTracker()
+
 
     cv2_count = 0  # only needed to draw picture process count on image when debugging
 
@@ -42,6 +47,8 @@ def main():
 
         image = handTracker.hands_finder(cv2.flip(image, 1), drawHandLandMarks)
         landmark_list = handTracker.position_finder(image)
+        landmark_list = hand_distance_to_camera.calculate_distance(landmark_list)
+        # plot_distance(landmark_distance_to_camera.calculate_distance(landmark_list))
         objectTracker.mouse_finder(landmark_list, image, drawDetectedColor)
         image = objectTracker.object_finder(image, drawObjectDetection)  # flip image, to display selfie view
         database.database_entry(landmark_list, objectTracker.mouse_box,
