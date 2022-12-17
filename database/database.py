@@ -30,7 +30,10 @@ class Database:
             except Exception:
                 self.keyboard_id = 0
             self.mouse_coordinates_id = self.cursor.execute("""SELECT id FROM mouseCoordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
-            self.keyboard_coordinates_id = self.cursor.execute("""SELECT id FROM keyboardCoordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            try:
+                self.keyboard_coordinates_id = self.cursor.execute("""SELECT id FROM keyboardCoordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.keyboard_coordinates_id = 0
 
         self.__create_tables()
 
@@ -41,7 +44,7 @@ class Database:
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS entry(id NOT NULL PRIMARY KEY , time, session_id)""")
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS mouse(id NOT NULL PRIMARY KEY , entry_id, FOREIGN KEY(entry_id) REFERENCES entry(id))""")
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS keyboard(id NOT NULL PRIMARY KEY , entry_id, FOREIGN KEY(entry_id) REFERENCES entry(id))""")
-        self.cursor.execute("""CREATE TABLE IF NOT EXISTS hand(id NOT NULL PRIMARY KEY , entry_id, is_right, FOREIGN KEY(entry_id) REFERENCES entry(id))""")
+        self.cursor.execute("""CREATE TABLE IF NOT EXISTS hand(id NOT NULL PRIMARY KEY , entry_id, is_right, distance_to_camera, FOREIGN KEY(entry_id) REFERENCES entry(id))""")
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS coordinates(id NOT NULL PRIMARY KEY , x, y, z)""")
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS landmarks(hand_id, landmark_typ_id, coordinates_id, FOREIGN KEY(hand_id) REFERENCES hand(id), FOREIGN KEY(landmark_typ_id) REFERENCES landmarkTypes(id), FOREIGN KEY(coordinates_id) REFERENCES coordinates(id))""")
         self.cursor.execute("""CREATE TABLE IF NOT EXISTS mouseCoordinates(id NOT NULL PRIMARY KEY , mouse_id, coordinates_id, FOREIGN KEY(mouse_id) REFERENCES mouse(id), FOREIGN KEY(coordinates_id) REFERENCES coordinates(id))""")
@@ -98,19 +101,19 @@ class Database:
         self.cursor.execute("""INSERT INTO entry VALUES (?, ?, ?)""", (self.entry_id, time.time(), self.session_id))
         self.entry_id = self.entry_id + 1
 
-    def __hand_entry(self, is_right):
-        """entry for hand [hand_id, entry_id, is_right]"""
+    def __hand_entry(self, is_right, distance_to_camera):
+        """entry for hand [hand_id, entry_id, is_right, distance_to_camera]"""
         x1, y1 = -1, -1
         if self.hand_id >= 1:
             (x1, y1) = self.cursor.execute("""SELECT entry_id, is_right FROM hand ORDER BY id DESC LIMIT 1""").fetchone()
         if self.entry_id - 1 != x1 or (y1 != (is_right == 'Right')):
-            self.cursor.execute("""INSERT INTO hand VALUES (?, ?, ?) """, (self.hand_id, self.entry_id - 1, is_right == 'Right'))
+            self.cursor.execute("""INSERT INTO hand VALUES (?, ?, ?, ?) """, (self.hand_id, self.entry_id - 1, is_right == 'Right', distance_to_camera))
             self.hand_id = self.hand_id + 1
 
     def __landmarks_entry(self, landmarks):
         """entry for landmarks [hand_id, landmark_typ_id, coordinates_id]"""
-        for landmark in landmarks:  # ['Right', 3, (537, 239, -0.07019183784723282)]
-            self.__hand_entry(landmark[0])
+        for landmark in landmarks:  # ['Right', 3, (537, 239, -0.07019183784723282), 75]
+            self.__hand_entry(landmark[0], landmark[3])
             self.__coordinates_entry(landmark[2][0], landmark[2][1], landmark[2][2])
             self.cursor.execute("""INSERT INTO landmarks VALUES (?, ?, ?) """, (self.hand_id - 1, landmark[1], self.coordinates_id - 1))
 
