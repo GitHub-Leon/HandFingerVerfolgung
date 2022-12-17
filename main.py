@@ -10,6 +10,7 @@ from hand_tracking.drawing.plot import plot_data, plot_distance
 from hand_tracking.hand_distance_to_camera import HandDistanceToCamera
 
 
+
 def main():
     cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # capture live webcam frames
     cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('m', 'j', 'p', 'g'))
@@ -28,6 +29,7 @@ def main():
     showDebugMessage = config['DEFAULT'].getboolean('showDebugMessages')
     drawDetectedColor = config['DEFAULT'].getboolean('drawDetectedColor')
     drawPictureProcessCounter = config['DEFAULT'].getboolean('drawPictureProcessCounter')
+
 
     database = Database()
     hand_distance_to_camera = HandDistanceToCamera(showDebugMessage)
@@ -51,6 +53,7 @@ def main():
         image = objectTracker.object_finder(image, drawObjectDetection)  # flip image, to display selfie view
         database.database_entry(landmark_list, objectTracker.mouse_box,
                                 objectTracker.keyboard_box)  # log everything in DB
+
 
         # show number of processed picture on screen
         if drawPictureProcessCounter:
