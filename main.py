@@ -23,7 +23,6 @@ def main():
 
     config.read('config.ini')
     showImg = config['DEFAULT'].getboolean('showImg')
-    drawPolyLine = config['DEFAULT'].getboolean('drawPolyLine')
     drawHandLandMarks = config['DEFAULT'].getboolean('drawHandLandMarks')
     drawObjectDetection = config['DEFAULT'].getboolean('drawObjectDetection')
     showDebugMessage = config['DEFAULT'].getboolean('showDebugMessages')
@@ -48,22 +47,10 @@ def main():
         image = handTracker.hands_finder(cv2.flip(image, 1), drawHandLandMarks)
         landmark_list = handTracker.position_finder(image)
         landmark_list = hand_distance_to_camera.calculate_distance(landmark_list)
-        # plot_distance(landmark_distance_to_camera.calculate_distance(landmark_list))
         objectTracker.mouse_finder(landmark_list, image, drawDetectedColor)
         image = objectTracker.object_finder(image, drawObjectDetection)  # flip image, to display selfie view
         database.database_entry(landmark_list, objectTracker.mouse_box,
                                 objectTracker.keyboard_box)  # log everything in DB
-
-        # to draw polyline
-        if drawPolyLine:
-            draw_polyline(landmark_list, image)
-
-        # to draw plot of z values
-        if landmark_list is not None:
-            try:
-                plot_data(landmark_list)
-            except IndexError:
-                pass
 
         # show number of processed picture on screen
         if drawPictureProcessCounter:

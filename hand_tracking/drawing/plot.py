@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-amount_of_logs = 500  # number of picture processes done, until a graph is plotted
+amount_of_logs = 1000  # number of picture processes done, until a graph is plotted
 starting_threshold = 0  # ignore the first 100 points
 moving_average = 20  # moving average length
 
