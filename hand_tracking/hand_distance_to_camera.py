@@ -5,7 +5,8 @@ class HandDistanceToCamera:
     def __init__(self, showDebugMessage):
         self.showDebugMessage = showDebugMessage
         self.KNOWN_DISTANCE = 750  # initialize the known distance from the camera to the object, which
-        self.KNOWN_WIDTH = 60  # initialize the known object width, which in this case is the distance in mm between landmark 5 and 17
+        self.KNOWN_WIDTH_5_17 = 60  # initialize the known object width, which in this case is the distance in mm between landmark 5 and 17
+        self.KNOWN_WIDTH_0_17 = 100  # initialize the known object width, which in this case is the distance in mm between landmark 0 and 17
         self.left_focal_length_5_17 = None
         self.left_focal_length_0_17 = None
         self.right_focal_length_5_17 = None
@@ -44,8 +45,8 @@ class HandDistanceToCamera:
             distance_in_pixel_left_5_17, distance_in_pixel_left_0_17 = self.get_pixel_distance(left, 'Left')
 
             # calculate the distance in millimeters for landmarks 5 and 17, and landmarks 0 and 17
-            distance_in_mm_left_5_17 = self.distance_finder(distance_in_pixel_left_5_17, self.left_focal_length_5_17)
-            distance_in_mm_left_0_17 = self.distance_finder(distance_in_pixel_left_0_17, self.left_focal_length_0_17)
+            distance_in_mm_left_5_17 = self.distance_finder(distance_in_pixel_left_5_17, self.left_focal_length_5_17, self.KNOWN_WIDTH_5_17)
+            distance_in_mm_left_0_17 = self.distance_finder(distance_in_pixel_left_0_17, self.left_focal_length_0_17, self.KNOWN_WIDTH_0_17)
 
             if distance_in_mm_left_0_17 < self.KNOWN_DISTANCE:  # if hand is rotated in the x axis
                 left_distance = distance_in_mm_left_0_17
@@ -62,8 +63,8 @@ class HandDistanceToCamera:
             distance_in_pixel_right_5_17, distance_in_pixel_right_0_17 = self.get_pixel_distance(right, 'Right')
 
             # calculate the distance in millimeters for landmarks 5 and 17, and landmarks 0 and 17
-            distance_in_mm_right_5_17 = self.distance_finder(distance_in_pixel_right_5_17, self.right_focal_length_5_17)
-            distance_in_mm_right_0_17 = self.distance_finder(distance_in_pixel_right_0_17, self.right_focal_length_0_17)
+            distance_in_mm_right_5_17 = self.distance_finder(distance_in_pixel_right_5_17, self.right_focal_length_5_17, self.KNOWN_WIDTH_5_17)
+            distance_in_mm_right_0_17 = self.distance_finder(distance_in_pixel_right_0_17, self.right_focal_length_0_17, self.KNOWN_WIDTH_0_17)
 
             if distance_in_mm_right_0_17 < self.KNOWN_DISTANCE:  # if hand is rotated in the x axis
                 right_distance = distance_in_mm_right_0_17
@@ -102,17 +103,17 @@ class HandDistanceToCamera:
         if init_focal_length:
             if hand == 'Left':
                 # initialize focal length for distance between landmark 5 and 17
-                self.left_focal_length_5_17 = self.focal_length_finder(self.KNOWN_DISTANCE, self.KNOWN_WIDTH,
+                self.left_focal_length_5_17 = self.focal_length_finder(self.KNOWN_DISTANCE, self.KNOWN_WIDTH_5_17,
                                                                        distance_in_pixel_5_17)
                 # initialize focal length for distance between landmark 0 and 17
-                self.left_focal_length_0_17 = self.focal_length_finder(self.KNOWN_DISTANCE, self.KNOWN_WIDTH,
+                self.left_focal_length_0_17 = self.focal_length_finder(self.KNOWN_DISTANCE, self.KNOWN_WIDTH_0_17,
                                                                        distance_in_pixel_0_17)
             elif hand == 'Right':
                 # initialize focal length for distance between landmark 5 and 17
-                self.right_focal_length_5_17 = self.focal_length_finder(self.KNOWN_DISTANCE, self.KNOWN_WIDTH,
+                self.right_focal_length_5_17 = self.focal_length_finder(self.KNOWN_DISTANCE, self.KNOWN_WIDTH_5_17,
                                                                         distance_in_pixel_5_17)
                 # initialize focal length for distance between landmark 0 and 17
-                self.right_focal_length_0_17 = self.focal_length_finder(self.KNOWN_DISTANCE, self.KNOWN_WIDTH,
+                self.right_focal_length_0_17 = self.focal_length_finder(self.KNOWN_DISTANCE, self.KNOWN_WIDTH_0_17,
                                                                         distance_in_pixel_0_17)
         else:
             # return pixel distances between landmark 5 and 17, and 0 and 17
@@ -126,8 +127,9 @@ class HandDistanceToCamera:
         focal_length = (width_in_rf_image * measured_distance) / real_width
         return focal_length
 
-    def distance_finder(self, distance_in_pixel, focal_length):
+    @staticmethod
+    def distance_finder(distance_in_pixel, focal_length, known_width):
         # calculate distance in millimeters
-        distance_in_mm = (self.KNOWN_WIDTH * focal_length) / distance_in_pixel
+        distance_in_mm = (known_width * focal_length) / distance_in_pixel
         # return the distance
         return distance_in_mm
