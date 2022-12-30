@@ -153,4 +153,4 @@ cython_debug/
 main_db*
 *.mp4
 *.MOV
-object_tracking/training_frames
+object_tracking/custom_model/training_frames

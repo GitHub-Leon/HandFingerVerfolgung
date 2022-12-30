@@ -2,8 +2,8 @@ import cv2
 import os
 
 # Create the output folder if it doesn't exist
-if not os.path.exists("object_tracking/training_frames"):
-    os.makedirs("object_tracking/training_frames")
+if not os.path.exists("object_tracking/custom_model/training_frames"):
+    os.makedirs("object_tracking/custom_model/training_frames")
 
 # Open the video file
 video = cv2.VideoCapture("Vid_2.MOV")
