@@ -1,7 +1,7 @@
-from ultralytics.yolov5 import YOLOv5
+import torch
 import cv2
 import numpy as np
-import win32api
+import pyautogui
 
 
 class ObjectTracker:
@@ -13,11 +13,11 @@ class ObjectTracker:
         self.detection_con = detection_con
         self.detection_threshold = detection_threshold
         self.net = cv2.dnn.readNet('object_tracking/yolo-coco/yolov3.weights', 'object_tracking/yolo-coco/yolov3.cfg')
-        self.yolov5_model = YOLOv5('object_tracking/custom_model/yolov5s.yaml', weights='object_tracking/custom_model/best.pt')
+        #self.yolov5_model = torch.hub.load('object_tracking/custom_model/yolov5s.yaml', weights='object_tracking/custom_model/best.pt')
         self.classes = self.load_classes()  # classes specified in coco.names
         self.colors = np.random.uniform(0, 255, size=(100, 3))  # color for bounding boxes
         self.font = cv2.FONT_HERSHEY_PLAIN  # font for bounding boxes
-        self.saved_pos = win32api.GetCursorPos()  # (x, y) tuple with cursor coords
+        self.saved_pos = pyautogui.position()  # (x, y) tuple with cursor coords
         self.replacement_threshold = 0.9  # new keyboard box area shouldn't be less than 0.9x of old box area size
 
         self.keyboard_box = []  # stores list of keyboard. Format: [label, confidence, (x, y, w, h)]
@@ -152,7 +152,8 @@ class ObjectTracker:
             avg = np.mean(points, axis=0)  # get position of avg point
             self.mouse_box = [(int(avg[0][0] - 30), int(avg[0][1] + 60)), (int(avg[0][0] + 30), int(avg[0][1] - 10))]
         else:
-            current_pos = win32api.GetCursorPos()
+            current_pos = pyautogui.position()
+            print(current_pos)
             if self.saved_pos != current_pos:
                 self.saved_pos = current_pos
 
