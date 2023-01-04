@@ -152,3 +152,5 @@ cython_debug/
 .idea/
 main_db*
 *.mp4
+*.MOV
+object_tracking/custom_model/training_frames

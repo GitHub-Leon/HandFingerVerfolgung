@@ -19,17 +19,38 @@ class Database:
             self.keyboard_id = 0
             self.keyboard_coordinates_id = 0
         else:  # else increment last stored values
-            self.session_id = self.cursor.execute("""SELECT session_id FROM entry ORDER BY session_id DESC LIMIT 1""").fetchone()[0] + 1
-            self.entry_id = self.cursor.execute("""SELECT id FROM entry ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
-            self.hand_id = self.cursor.execute("""SELECT id FROM hand ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
-            self.landmark_typ_id = self.cursor.execute("""SELECT id FROM landmarkTypes ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
-            self.coordinates_id = self.cursor.execute("""SELECT id FROM coordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
-            self.mouse_id = self.cursor.execute("""SELECT id FROM mouse ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            try:
+                self.session_id = self.cursor.execute("""SELECT session_id FROM entry ORDER BY session_id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.session_id = 0
+            try:
+                self.entry_id = self.cursor.execute("""SELECT id FROM entry ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.entry_id = 0
+            try:
+                self.hand_id = self.cursor.execute("""SELECT id FROM hand ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.hand_id = 0
+            try:
+                self.landmark_typ_id = self.cursor.execute("""SELECT id FROM landmarkTypes ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.landmark_typ_id = 0
+            try:
+                self.coordinates_id = self.cursor.execute("""SELECT id FROM coordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.coordinates_id = 0
+            try:
+                self.mouse_id = self.cursor.execute("""SELECT id FROM mouse ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.mouse_id = 0
             try:
                 self.keyboard_id = self.cursor.execute("""SELECT id FROM keyboard ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
             except Exception:
                 self.keyboard_id = 0
-            self.mouse_coordinates_id = self.cursor.execute("""SELECT id FROM mouseCoordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            try:
+                self.mouse_coordinates_id = self.cursor.execute("""SELECT id FROM mouseCoordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.mouse_coordinates_id = 0
             try:
                 self.keyboard_coordinates_id = self.cursor.execute("""SELECT id FROM keyboardCoordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
             except Exception:
@@ -59,7 +80,7 @@ class Database:
         main function to create a database entry
         :param keyboard_box: entry of keyboard box in format: [['keyboard', '0.29', (73, 245, 404, 144)]]
         :param hand_landmarks: all landmarks in format: [['Right', 3, (537, 239, -0.07019183784723282)], ... ]
-        :param mouse_box: coordinates of mouse box in format [(x1, y1), (x2, y2)]
+        :param mouse_box: coordinates of mouse box in format  [['mouse', '0.59', (20, 456, 760, 522)]]
         """
         self.__entry_entry()
         self.__landmarks_entry(hand_landmarks)
@@ -70,15 +91,17 @@ class Database:
 
     def __mouse_coordinates_entry(self, mouse_box):
         """entry for mouse coordinates [mouse_coordinates_id, mouse_id, coordinates_id]"""
-        self.__mouse_entry()
-        for mouse_coord in mouse_box:
-            self.__coordinates_entry(mouse_coord[0], mouse_coord[1], -1)
-            self.cursor.execute("""INSERT INTO mouseCoordinates VALUES (?, ?, ?)""", (self.mouse_coordinates_id, self.mouse_id-1, self.coordinates_id-1))
-            self.mouse_coordinates_id = self.mouse_coordinates_id + 1
+        if mouse_box:
+            self.__mouse_entry()
+            mouse_coords = [(mouse_box[0][2][0], mouse_box[0][2][1]), (mouse_box[0][2][0] + mouse_box[0][2][2], mouse_box[0][2][1] + mouse_box[0][2][3])]
+            for mouse_coord in mouse_coords:
+                self.__coordinates_entry(mouse_coord[0], mouse_coord[1], -1)
+                self.cursor.execute("""INSERT INTO mouseCoordinates VALUES (?, ?, ?)""", (self.mouse_coordinates_id, self.mouse_id - 1, self.coordinates_id - 1))
+                self.mouse_coordinates_id = self.mouse_coordinates_id + 1
 
     def __mouse_entry(self):
         """entry for mouse [mouse_id, entry_id]"""
-        self.cursor.execute("""INSERT INTO mouse VALUES (?, ?)""", (self.mouse_id, self.entry_id-1))
+        self.cursor.execute("""INSERT INTO mouse VALUES (?, ?)""", (self.mouse_id, self.entry_id - 1))
         self.mouse_id = self.mouse_id + 1
 
     def __keyboard_coordinates_entry(self, keyboard_box):
@@ -88,12 +111,12 @@ class Database:
             keyboard_coords = [(keyboard_box[0][2][0], keyboard_box[0][2][1]), (keyboard_box[0][2][0] + keyboard_box[0][2][2], keyboard_box[0][2][1] + keyboard_box[0][2][3])]
             for keyboard_coord in keyboard_coords:
                 self.__coordinates_entry(keyboard_coord[0], keyboard_coord[1], -1)
-                self.cursor.execute("""INSERT INTO keyboardCoordinates VALUES (?, ?, ?)""", (self.keyboard_coordinates_id, self.keyboard_id-1, self.coordinates_id-1))
+                self.cursor.execute("""INSERT INTO keyboardCoordinates VALUES (?, ?, ?)""", (self.keyboard_coordinates_id, self.keyboard_id - 1, self.coordinates_id - 1))
                 self.keyboard_coordinates_id = self.keyboard_coordinates_id + 1
 
     def __keyboard_entry(self):
         """entry for keyboard [keyboard_id, entry_id]"""
-        self.cursor.execute("""INSERT INTO keyboard VALUES (?, ?)""", (self.keyboard_id, self.entry_id-1))
+        self.cursor.execute("""INSERT INTO keyboard VALUES (?, ?)""", (self.keyboard_id, self.entry_id - 1))
         self.keyboard_id = self.keyboard_id + 1
 
     def __entry_entry(self):
