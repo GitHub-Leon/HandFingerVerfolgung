@@ -1,8 +1,8 @@
-import torch
 import cv2
 import numpy as np
-import pyautogui
 import pandas as pd
+import pyautogui
+import torch
 from torchvision.ops import nms
 
 
@@ -20,7 +20,7 @@ class ObjectTracker:
             self.classes = self.load_classes_yolov3()  # classes specified in coco.names
         else:
             self.yolov5_model = torch.hub.load('ultralytics/yolov5', 'yolov5n')  # device='cpu' # TODO
-           # self.yolov5_model = torch.hub.load('ultralytics/yolov5', 'custom', path='object_tracking/custom_model/best.pt')
+            # self.yolov5_model = torch.hub.load('ultralytics/yolov5', 'custom', path='object_tracking/custom_model/best.pt')
             self.init_model()
             self.classes = self.load_classes_yolov5()  # classes specified in coco.names
 
@@ -123,7 +123,6 @@ class ObjectTracker:
             for class_id in results['class']:
                 class_ids.append(class_id)
 
-
             if len(boxes) > 0:
                 indexes = nms(torch.tensor(boxes, dtype=torch.float), torch.tensor(confidences, dtype=torch.float), 0.4).numpy()
                 # indexes = np.arange(len(boxes))
@@ -153,7 +152,7 @@ class ObjectTracker:
 
             if draw:  # only draw boxes when option is enabled (Default)
                 cv2.rectangle(image, (x, y), (x + w, y + h), self.colors[60], 2)
-                cv2.putText(image, label + " " + str(confidence), (x, y+h + 20), self.font, 2, self.colors[60], 2)
+                cv2.putText(image, label + " " + str(confidence), (x, y + h + 20), self.font, 2, self.colors[60], 2)
 
         return image
 
@@ -191,7 +190,6 @@ class ObjectTracker:
             if not self.use_yolov3 and len(self.mouse_box) == 0 and label == 'mouse':
                 self.mouse_box.append([label, confidence, (x, y, w, h)])
 
-
     def mouse_finder(self, landmarks, image, drawDetectedColor):
         """
         This function gets the current cursor position and updates self.mouse_box with new landmark coords when moved
@@ -220,7 +218,7 @@ class ObjectTracker:
             if points is not None and len(points) > 50:  # threshold for other color points on screen
                 avg = np.mean(points, axis=0)  # get position of avg point
                 self.mouse_box.clear()
-                self.mouse_box.append(['mouse', 0, (int(avg[0][0] - 30), int(avg[0][1] + 60), int(avg[0][0] + 30)-int(avg[0][0] - 30), int(avg[0][1] - 10)-int(avg[0][1] + 60))])
+                self.mouse_box.append(['mouse', 0, (int(avg[0][0] - 30), int(avg[0][1] + 60), int(avg[0][0] + 30) - int(avg[0][0] - 30), int(avg[0][1] - 10) - int(avg[0][1] + 60))])
             else:
                 current_pos = pyautogui.position()
 
@@ -262,4 +260,4 @@ class ObjectTracker:
                     y_2 = max(ity, mty, tty)
 
                     self.mouse_box.clear()
-                    self.mouse_box.append(['mouse', 0, (x_1, y_1, x_2-x_1, y_2-y_1)])
+                    self.mouse_box.append(['mouse', 0, (x_1, y_1, x_2 - x_1, y_2 - y_1)])

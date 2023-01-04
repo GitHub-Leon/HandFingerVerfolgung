@@ -94,12 +94,12 @@ class Database:
         self.__mouse_entry()
         for mouse_coord in mouse_box:
             self.__coordinates_entry(mouse_coord[0], mouse_coord[1], -1)
-            self.cursor.execute("""INSERT INTO mouseCoordinates VALUES (?, ?, ?)""", (self.mouse_coordinates_id, self.mouse_id-1, self.coordinates_id-1))
+            self.cursor.execute("""INSERT INTO mouseCoordinates VALUES (?, ?, ?)""", (self.mouse_coordinates_id, self.mouse_id - 1, self.coordinates_id - 1))
             self.mouse_coordinates_id = self.mouse_coordinates_id + 1
 
     def __mouse_entry(self):
         """entry for mouse [mouse_id, entry_id]"""
-        self.cursor.execute("""INSERT INTO mouse VALUES (?, ?)""", (self.mouse_id, self.entry_id-1))
+        self.cursor.execute("""INSERT INTO mouse VALUES (?, ?)""", (self.mouse_id, self.entry_id - 1))
         self.mouse_id = self.mouse_id + 1
 
     def __keyboard_coordinates_entry(self, keyboard_box):
@@ -109,12 +109,12 @@ class Database:
             keyboard_coords = [(keyboard_box[0][2][0], keyboard_box[0][2][1]), (keyboard_box[0][2][0] + keyboard_box[0][2][2], keyboard_box[0][2][1] + keyboard_box[0][2][3])]
             for keyboard_coord in keyboard_coords:
                 self.__coordinates_entry(keyboard_coord[0], keyboard_coord[1], -1)
-                self.cursor.execute("""INSERT INTO keyboardCoordinates VALUES (?, ?, ?)""", (self.keyboard_coordinates_id, self.keyboard_id-1, self.coordinates_id-1))
+                self.cursor.execute("""INSERT INTO keyboardCoordinates VALUES (?, ?, ?)""", (self.keyboard_coordinates_id, self.keyboard_id - 1, self.coordinates_id - 1))
                 self.keyboard_coordinates_id = self.keyboard_coordinates_id + 1
 
     def __keyboard_entry(self):
         """entry for keyboard [keyboard_id, entry_id]"""
-        self.cursor.execute("""INSERT INTO keyboard VALUES (?, ?)""", (self.keyboard_id, self.entry_id-1))
+        self.cursor.execute("""INSERT INTO keyboard VALUES (?, ?)""", (self.keyboard_id, self.entry_id - 1))
         self.keyboard_id = self.keyboard_id + 1
 
     def __entry_entry(self):

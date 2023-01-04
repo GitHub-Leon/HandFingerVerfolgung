@@ -1,5 +1,6 @@
-import cv2
 import os
+
+import cv2
 
 # Create the output folder if it doesn't exist
 if not os.path.exists("object_tracking/custom_model/training_frames"):

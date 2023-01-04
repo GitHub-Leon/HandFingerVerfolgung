@@ -1,6 +1,5 @@
-import numpy as np
 import matplotlib.pyplot as plt
-
+import numpy as np
 
 amount_of_logs = 1100  # number of picture processes done, until a graph is plotted
 starting_threshold = 100  # ignore the first 100 points
@@ -24,8 +23,8 @@ def plot_data(data):
 
     average_data.append(np.mean(np.array(total_data[-moving_average:])))
 
-    if (total_data[len(total_data)-1] > average_data[len(average_data)-1]*(1+allowed_div) or total_data[len(total_data)-1] < average_data[len(average_data)-1]*(1-allowed_div)) and len(total_data)-1 > starting_threshold:
-        index.append(len(total_data)-1)
+    if (total_data[len(total_data) - 1] > average_data[len(average_data) - 1] * (1 + allowed_div) or total_data[len(total_data) - 1] < average_data[len(average_data) - 1] * (1 - allowed_div)) and len(total_data) - 1 > starting_threshold:
+        index.append(len(total_data) - 1)
 
     if len(total_data) == amount_of_logs:
         for i in index:
@@ -41,7 +40,6 @@ def plot_data(data):
     plt.show()
 
     if len(total_data) == amount_of_logs:
-
         plt.plot(np.arange(0, len(total_data2[starting_threshold:])), np.array(total_data2[starting_threshold:]), 'or')
         plt.show()
         plt.plot(np.arange(0, len(total_data3[starting_threshold:])), np.array(total_data3[starting_threshold:]), 'og')
@@ -54,4 +52,3 @@ def plot_distance(distance):
     if len(total_distance) == amount_of_logs:
         plt.plot(np.arange(0, len(total_distance[starting_threshold:])), np.array(total_distance[starting_threshold:]), 'or')
         plt.show()
-
