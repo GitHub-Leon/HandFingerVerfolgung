@@ -80,7 +80,7 @@ class Database:
         main function to create a database entry
         :param keyboard_box: entry of keyboard box in format: [['keyboard', '0.29', (73, 245, 404, 144)]]
         :param hand_landmarks: all landmarks in format: [['Right', 3, (537, 239, -0.07019183784723282)], ... ]
-        :param mouse_box: coordinates of mouse box in format [(x1, y1), (x2, y2)]
+        :param mouse_box: coordinates of mouse box in format  [['mouse', '0.59', (20, 456, 760, 522)]]
         """
         self.__entry_entry()
         self.__landmarks_entry(hand_landmarks)
@@ -91,11 +91,13 @@ class Database:
 
     def __mouse_coordinates_entry(self, mouse_box):
         """entry for mouse coordinates [mouse_coordinates_id, mouse_id, coordinates_id]"""
-        self.__mouse_entry()
-        for mouse_coord in mouse_box:
-            self.__coordinates_entry(mouse_coord[0], mouse_coord[1], -1)
-            self.cursor.execute("""INSERT INTO mouseCoordinates VALUES (?, ?, ?)""", (self.mouse_coordinates_id, self.mouse_id - 1, self.coordinates_id - 1))
-            self.mouse_coordinates_id = self.mouse_coordinates_id + 1
+        if mouse_box:
+            self.__mouse_entry()
+            mouse_coords = [(mouse_box[0][2][0], mouse_box[0][2][1]), (mouse_box[0][2][0] + mouse_box[0][2][2], mouse_box[0][2][1] + mouse_box[0][2][3])]
+            for mouse_coord in mouse_coords:
+                self.__coordinates_entry(mouse_coord[0], mouse_coord[1], -1)
+                self.cursor.execute("""INSERT INTO mouseCoordinates VALUES (?, ?, ?)""", (self.mouse_coordinates_id, self.mouse_id - 1, self.coordinates_id - 1))
+                self.mouse_coordinates_id = self.mouse_coordinates_id + 1
 
     def __mouse_entry(self):
         """entry for mouse [mouse_id, entry_id]"""
