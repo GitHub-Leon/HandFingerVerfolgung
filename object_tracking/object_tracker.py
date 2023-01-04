@@ -18,7 +18,7 @@ class ObjectTracker:
         if self.use_yolov3:
             self.net = cv2.dnn.readNet('object_tracking/yolo-coco/yolov3.weights', 'object_tracking/yolo-coco/yolov3.cfg')
         else:
-            self.yolov5_model = torch.hub.load('ultralytics/yolov5', 'yolov5n')  # device='cpu' # TODO
+            self.yolov5_model = torch.hub.load('ultralytics/yolov5', 'yolov5n', force_reload=True)
             # self.yolov5_model = torch.hub.load('ultralytics/yolov5', 'custom', path='object_tracking/custom_model/best.pt')
             self.init_model()
         self.classes = self.load_classes()  # classes specified in coco.names
@@ -40,6 +40,16 @@ class ObjectTracker:
         self.yolov5_model.max_det = 1000  # maximum number of detections per image
         self.yolov5_model.amp = False  # Automatic Mixed Precision (AMP) inference
 
+    @staticmethod
+    def _check_for_gpu():
+        """checks if we have all requirements installed (cuda) and a compatible gpu"""
+        if torch.cuda.is_available():
+            dev = "cuda:0"
+        else:
+            dev = "cpu"
+
+        print("Using device: " + dev)
+        return dev
 
     def load_classes(self):
         """
