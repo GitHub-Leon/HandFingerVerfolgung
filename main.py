@@ -23,6 +23,7 @@ def main():
     drawHandLandMarks = config['DEFAULT'].getboolean('drawHandLandMarks')
     drawObjectDetection = config['DEFAULT'].getboolean('drawObjectDetection')
     showDebugMessage = config['DEFAULT'].getboolean('showDebugMessages')
+    storeInDB = config['DEFAULT'].getboolean('storeInDB')
     drawDetectedColor = config['DEFAULT'].getboolean('drawDetectedColor')
     drawPictureProcessCounter = config['DEFAULT'].getboolean('drawPictureProcessCounter')
     use_yolov3 = config['DEFAULT'].getboolean('use_yolov3')
@@ -30,7 +31,7 @@ def main():
     database = Database()
     hand_distance_to_camera = HandDistanceToCamera(showDebugMessage)
     handTracker = HandTracker()
-    objectTracker = ObjectTracker(use_yolov3)
+    objectTracker = ObjectTracker(use_yolov3, showDebugMessage)
 
     cv2_count = 0  # only needed to draw picture process count on image when debugging
     # time = []
@@ -40,14 +41,16 @@ def main():
         success, image = cap.read()
 
         if not success:
-            print("Ignoring empty frame.")
+            if showDebugMessage:
+                print("Ignoring empty frame.")
             continue
 
         image = handTracker.hands_finder(cv2.flip(image, 1), drawHandLandMarks)
         landmark_list = handTracker.position_finder(image)
         landmark_list = hand_distance_to_camera.calculate_distance(landmark_list)
         image = objectTracker.object_finder(image, landmark_list, drawObjectDetection, drawDetectedColor)  # flip image, to display selfie view
-        database.database_entry(landmark_list, objectTracker.mouse_box, objectTracker.keyboard_box)  # log everything in DB
+        if storeInDB:
+            database.database_entry(landmark_list, objectTracker.mouse_box, objectTracker.keyboard_box)  # log everything in DB
 
         # show number of processed picture on screen
         if drawPictureProcessCounter:

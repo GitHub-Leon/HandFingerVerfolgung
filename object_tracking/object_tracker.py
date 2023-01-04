@@ -11,8 +11,9 @@ class ObjectTracker:
     Class to initialise a object tracker. Can be used to find the image coordinates of keyboard and mouse
     """
 
-    def __init__(self, use_yolov3, detection_con=0.3, detection_threshold=0.2):
+    def __init__(self, use_yolov3, showDebugMessage, detection_con=0.3, detection_threshold=0.2):
         self.use_yolov3 = use_yolov3
+        self.showDebugMessage = showDebugMessage
         self.detection_con = detection_con
         self.detection_threshold = detection_threshold
         if self.use_yolov3:
@@ -40,15 +41,16 @@ class ObjectTracker:
         self.yolov5_model.max_det = 1000  # maximum number of detections per image
         self.yolov5_model.amp = False  # Automatic Mixed Precision (AMP) inference
 
-    @staticmethod
-    def _check_for_gpu():
+
+    def _check_for_gpu(self):
         """checks if we have all requirements installed (cuda) and a compatible gpu"""
         if torch.cuda.is_available():
             dev = "cuda:0"
         else:
             dev = "cpu"
 
-        print("Using device: " + dev)
+        if self.showDebugMessage:
+            print("Using device: " + dev)
         return dev
 
     def load_classes(self):
@@ -110,7 +112,8 @@ class ObjectTracker:
             indexes = cv2.dnn.NMSBoxes(boxes, confidences, self.detection_threshold, 0.4)
         else:
             results = self.yolov5_model(image)
-            results.print()
+            if self.showDebugMessage:
+                results.print()
             results = results.pandas().xyxy[0]
 
             # Extract the bounding boxes, confidence scores, and class labels from the results
