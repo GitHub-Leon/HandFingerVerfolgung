@@ -51,7 +51,6 @@ class ObjectTracker:
         classes = []
         with open('object_tracking/yolo-coco/coco.names', 'r') as file:
             classes = file.read().splitlines()
-            print(classes)
 
         return classes
 
@@ -154,7 +153,7 @@ class ObjectTracker:
 
             if draw:  # only draw boxes when option is enabled (Default)
                 cv2.rectangle(image, (x, y), (x + w, y + h), self.colors[60], 2)
-                cv2.putText(image, label + " " + str(confidence), (x, y + 20), self.font, 2, self.colors[60], 2)
+                cv2.putText(image, label + " " + str(confidence), (x, y+h + 20), self.font, 2, self.colors[60], 2)
 
         return image
 
@@ -237,9 +236,9 @@ class ObjectTracker:
 
                         # get outer coords to define a clean rectangle for the mouse
                         x_1 = min(itx, imx, ttx)
-                        y_1 = max(ity, mty, tty)
+                        y_1 = min(mmy, imy)
                         x_2 = max(mtx, mmx)
-                        y_2 = min(mmy, imy)
+                        y_2 = max(ity, mty, tty)
 
                         self.mouse_box.clear()
                         self.mouse_box.append(['mouse', 0, (x_1, y_1, x_2 - x_1, y_2 - y_1)])
@@ -258,18 +257,9 @@ class ObjectTracker:
 
                     # get outer coords to define a clean rectangle for the mouse
                     x_1 = min(itx, imx, ttx)
-                    y_1 = max(ity, mty, tty)
+                    y_1 = min(mmy, imy)
                     x_2 = max(mtx, mmx)
-                    y_2 = min(mmy, imy)
+                    y_2 = max(ity, mty, tty)
 
-                    print()
-                    print(x_1)
-                    print(x_2)
-                    print(y_1)
-                    print(y_2)
-                    print()
                     self.mouse_box.clear()
                     self.mouse_box.append(['mouse', 0, (x_1, y_1, x_2-x_1, y_2-y_1)])
-                    print((x_1, y_1, x_2-x_1, y_2-y_1))
-
-                    print()
