@@ -19,17 +19,38 @@ class Database:
             self.keyboard_id = 0
             self.keyboard_coordinates_id = 0
         else:  # else increment last stored values
-            self.session_id = self.cursor.execute("""SELECT session_id FROM entry ORDER BY session_id DESC LIMIT 1""").fetchone()[0] + 1
-            self.entry_id = self.cursor.execute("""SELECT id FROM entry ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
-            self.hand_id = self.cursor.execute("""SELECT id FROM hand ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
-            self.landmark_typ_id = self.cursor.execute("""SELECT id FROM landmarkTypes ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
-            self.coordinates_id = self.cursor.execute("""SELECT id FROM coordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
-            self.mouse_id = self.cursor.execute("""SELECT id FROM mouse ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            try:
+                self.session_id = self.cursor.execute("""SELECT session_id FROM entry ORDER BY session_id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.session_id = 0
+            try:
+                self.entry_id = self.cursor.execute("""SELECT id FROM entry ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.entry_id = 0
+            try:
+                self.hand_id = self.cursor.execute("""SELECT id FROM hand ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.hand_id = 0
+            try:
+                self.landmark_typ_id = self.cursor.execute("""SELECT id FROM landmarkTypes ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.landmark_typ_id = 0
+            try:
+                self.coordinates_id = self.cursor.execute("""SELECT id FROM coordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.coordinates_id = 0
+            try:
+                self.mouse_id = self.cursor.execute("""SELECT id FROM mouse ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.mouse_id = 0
             try:
                 self.keyboard_id = self.cursor.execute("""SELECT id FROM keyboard ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
             except Exception:
                 self.keyboard_id = 0
-            self.mouse_coordinates_id = self.cursor.execute("""SELECT id FROM mouseCoordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            try:
+                self.mouse_coordinates_id = self.cursor.execute("""SELECT id FROM mouseCoordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
+            except Exception:
+                self.mouse_coordinates_id = 0
             try:
                 self.keyboard_coordinates_id = self.cursor.execute("""SELECT id FROM keyboardCoordinates ORDER BY id DESC LIMIT 1""").fetchone()[0] + 1
             except Exception:

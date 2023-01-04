@@ -1,6 +1,9 @@
 import configparser
 
 import cv2
+import matplotlib.pyplot as plt
+import numpy as np
+import timeit  # only used for performance measurements
 
 from database.database import Database
 from hand_tracking.drawing.draw_on_image import draw_polyline
@@ -29,17 +32,20 @@ def main():
     showDebugMessage = config['DEFAULT'].getboolean('showDebugMessages')
     drawDetectedColor = config['DEFAULT'].getboolean('drawDetectedColor')
     drawPictureProcessCounter = config['DEFAULT'].getboolean('drawPictureProcessCounter')
+    use_yolov3 = config['DEFAULT'].getboolean('use_yolov3')
 
 
     database = Database()
     hand_distance_to_camera = HandDistanceToCamera(showDebugMessage)
     handTracker = HandTracker()
-    objectTracker = ObjectTracker()
+    objectTracker = ObjectTracker(use_yolov3)
 
 
     cv2_count = 0  # only needed to draw picture process count on image when debugging
+    # time = []
 
     while cap.isOpened:  # while we capture the video, analyse each frame
+        # start = timeit.default_timer()
         success, image = cap.read()
 
         if not success:
@@ -49,10 +55,8 @@ def main():
         image = handTracker.hands_finder(cv2.flip(image, 1), drawHandLandMarks)
         landmark_list = handTracker.position_finder(image)
         landmark_list = hand_distance_to_camera.calculate_distance(landmark_list)
-        objectTracker.mouse_finder(landmark_list, image, drawDetectedColor)
-        image = objectTracker.object_finder(image, drawObjectDetection)  # flip image, to display selfie view
-        database.database_entry(landmark_list, objectTracker.mouse_box,
-                                objectTracker.keyboard_box)  # log everything in DB
+        image = objectTracker.object_finder(image, landmark_list, drawObjectDetection, drawDetectedColor)  # flip image, to display selfie view
+        database.database_entry(landmark_list, objectTracker.mouse_box, objectTracker.keyboard_box)  # log everything in DB
 
 
         # show number of processed picture on screen
@@ -64,6 +68,11 @@ def main():
         if showImg:
             cv2.imshow("Hand- und Fingerverfolgung", image)
 
+        # end = timeit.default_timer()
+        # time.append(end-start)
+        #
+        # if len(time[5:]) == 150:
+        #     print(sum([x for x in time[5:]]) / len(time[5:]))
         cv2.waitKey(30)  # frame updates per second
 
     cap.release()
