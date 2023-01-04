@@ -1,8 +1,7 @@
 # README
 
 This code contains a class `Database` that connects to a sqlite database and creates various tables to store data about mouse and keyboard movements, as well as hand landmarks.
-<a href="https://github.com/GitHub-Leon/HandFingerVerfolgung" style="text-decoration:none;">
-      <img src="https://github.com/GitHub-Leon/HandFingerVerfolgung/blob/master/assets/database_overview" width="100%" alt="" /></a>
+![Database Overview](./assets/database_overview.png)
 ## Class Definitions
 
 ### database.py
