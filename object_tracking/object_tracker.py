@@ -17,12 +17,11 @@ class ObjectTracker:
         self.detection_threshold = detection_threshold
         if self.use_yolov3:
             self.net = cv2.dnn.readNet('object_tracking/yolo-coco/yolov3.weights', 'object_tracking/yolo-coco/yolov3.cfg')
-            self.classes = self.load_classes_yolov3()  # classes specified in coco.names
         else:
             self.yolov5_model = torch.hub.load('ultralytics/yolov5', 'yolov5n')  # device='cpu' # TODO
             # self.yolov5_model = torch.hub.load('ultralytics/yolov5', 'custom', path='object_tracking/custom_model/best.pt')
             self.init_model()
-            self.classes = self.load_classes_yolov5()  # classes specified in coco.names
+        self.classes = self.load_classes()  # classes specified in coco.names
 
         self.colors = np.random.uniform(0, 255, size=(100, 3))  # color for bounding boxes
         self.font = cv2.FONT_HERSHEY_PLAIN  # font for bounding boxes
@@ -38,38 +37,31 @@ class ObjectTracker:
         self.yolov5_model.agnostic = False  # NMS class-agnostic
         self.yolov5_model.multi_label = False  # NMS multiple labels per box
         self.yolov5_model.classes = None  # (optional list) filter by class, i.e. = [0, 15, 16] for COCO persons, cats and dogs, [64, 66] for mouse and keyboard
-        self.yolov5_model.max_det = 1000  # maximum number of detections per image #TODO
-        self.yolov5_model.amp = False  # Automatic Mixed Precision (AMP) inference #TODO
+        self.yolov5_model.max_det = 1000  # maximum number of detections per image
+        self.yolov5_model.amp = False  # Automatic Mixed Precision (AMP) inference
 
-    @staticmethod
-    def load_classes_yolov3():
+
+    def load_classes(self):
         """
         load the COCO class labels our YOLO model was trained on
         :return: list of classes
         """
 
         classes = []
-        with open('object_tracking/yolo-coco/coco.names', 'r') as file:
-            classes = file.read().splitlines()
-
-        return classes
-
-    @staticmethod
-    def load_classes_yolov5():
-        """
-        load the COCO class labels our YOLO model was trained on
-        :return: list of classes
-        """
-
-        classes = []
-        with open('object_tracking/custom_model/coco.names', 'r') as file:
-            classes = file.read().splitlines()
+        if self.use_yolov3:
+            with open('object_tracking/yolo-coco/coco.names', 'r') as file:
+                classes = file.read().splitlines()
+        else:
+            with open('object_tracking/custom_model/coco.names', 'r') as file:
+                classes = file.read().splitlines()
 
         return classes
 
     def object_finder(self, image, landmarks, draw=True, drawDetectedColor=False):
         """
         function to process an image to get hand landmarks and draw them onto the image
+        :param drawDetectedColor: setting in config.ini, if you want to draw color detected by color detection for mouse in yolov3
+        :param landmarks: landmarks of hands
         :param image: image which should be processed for hand detection
         :param draw: optional flag, if landmarks need to be drawn on image
         :return: image (with optionally drawn landmarks)
@@ -110,6 +102,7 @@ class ObjectTracker:
             results = self.yolov5_model(image)
             results.print()
             results = results.pandas().xyxy[0]
+
             # Extract the bounding boxes, confidence scores, and class labels from the results
             results[['xmin', 'ymin', 'xmax', 'ymax']] = results[['xmin', 'ymin', 'xmax', 'ymax']].apply(pd.to_numeric)
             for xmin, ymin, xmax, ymax in results[['xmin', 'ymin', 'xmax', 'ymax']].values:
@@ -160,6 +153,7 @@ class ObjectTracker:
         """
         Checks the boxes of each recognized pattern, and checks if the stored one has a lower confidence level and
         replaces it afterwards
+        :param class_ids: ids of the detected classes, like defined in coco.names
         :param indexes: a NMSBox with boxes, confidences regarding a certain threshold
         :param boxes: list of boxes found
         :param confidences: list of confidences
@@ -194,6 +188,7 @@ class ObjectTracker:
         """
         This function gets the current cursor position and updates self.mouse_box with new landmark coords when moved
         If it finds a color point, which indicates our mouse, it uses this instead
+        :param drawDetectedColor: setting in config.ini, if you want to draw color detected by color detection for mouse in yolov3
         :param image: Image that gets processed to search color points
         :param landmarks: list of hand landmarks to get finger position
         """
@@ -220,44 +215,29 @@ class ObjectTracker:
                 self.mouse_box.clear()
                 self.mouse_box.append(['mouse', 0, (int(avg[0][0] - 30), int(avg[0][1] + 60), int(avg[0][0] + 30) - int(avg[0][0] - 30), int(avg[0][1] - 10) - int(avg[0][1] + 60))])
             else:
-                current_pos = pyautogui.position()
-
-                if self.saved_pos != current_pos:
-                    self.saved_pos = current_pos
-
-                    if len(landmarks) != 0:
-                        itx, ity, _ = landmarks[8][2]  # index finger tip coords
-                        imx, imy, _ = landmarks[5][2]  # index finger mcp coords
-                        mtx, mty, _ = landmarks[12][2]  # middle finger tip coords
-                        mmx, mmy, _ = landmarks[9][2]  # middle finger mcp coords
-                        ttx, tty, _ = landmarks[4][2]  # thumb tip coords
-
-                        # get outer coords to define a clean rectangle for the mouse
-                        x_1 = min(itx, imx, ttx)
-                        y_1 = min(mmy, imy)
-                        x_2 = max(mtx, mmx)
-                        y_2 = max(ity, mty, tty)
-
-                        self.mouse_box.clear()
-                        self.mouse_box.append(['mouse', 0, (x_1, y_1, x_2 - x_1, y_2 - y_1)])
+                self._calculate_mouse_from_landmarks(landmarks)
         else:
-            current_pos = pyautogui.position()
+            self._calculate_mouse_from_landmarks(landmarks)
 
-            if self.saved_pos != current_pos:
-                self.saved_pos = current_pos
+    def _calculate_mouse_from_landmarks(self, landmarks):
+        """calculates the new mouse coordinates based on the landmarks positions defined below"""
+        current_pos = pyautogui.position()
 
-                if len(landmarks) != 0:
-                    itx, ity, _ = landmarks[8][2]  # index finger tip coords
-                    imx, imy, _ = landmarks[5][2]  # index finger mcp coords
-                    mtx, mty, _ = landmarks[12][2]  # middle finger tip coords
-                    mmx, mmy, _ = landmarks[9][2]  # middle finger mcp coords
-                    ttx, tty, _ = landmarks[4][2]  # thumb tip coords
+        if self.saved_pos != current_pos:
+            self.saved_pos = current_pos
 
-                    # get outer coords to define a clean rectangle for the mouse
-                    x_1 = min(itx, imx, ttx)
-                    y_1 = min(mmy, imy)
-                    x_2 = max(mtx, mmx)
-                    y_2 = max(ity, mty, tty)
+            if len(landmarks) != 0:
+                itx, ity, _ = landmarks[8][2]  # index finger tip coords
+                imx, imy, _ = landmarks[5][2]  # index finger mcp coords
+                mtx, mty, _ = landmarks[12][2]  # middle finger tip coords
+                mmx, mmy, _ = landmarks[9][2]  # middle finger mcp coords
+                ttx, tty, _ = landmarks[4][2]  # thumb tip coords
 
-                    self.mouse_box.clear()
-                    self.mouse_box.append(['mouse', 0, (x_1, y_1, x_2 - x_1, y_2 - y_1)])
+                # get outer coords to define a clean rectangle for the mouse
+                x_1 = min(itx, imx, ttx)
+                y_1 = min(mmy, imy)
+                x_2 = max(mtx, mmx)
+                y_2 = max(ity, mty, tty)
+
+                self.mouse_box.clear()
+                self.mouse_box.append(['mouse', 0, (x_1, y_1, x_2 - x_1, y_2 - y_1)])

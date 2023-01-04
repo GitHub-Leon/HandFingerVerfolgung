@@ -63,7 +63,7 @@ def main():
         #
         # if len(time[5:]) == 150:
         #     print(sum([x for x in time[5:]]) / len(time[5:]))
-        cv2.waitKey(30)  # frame updates per second
+        cv2.waitKey(2)  # waits for a key interrupt x ms
 
     cap.release()
 
