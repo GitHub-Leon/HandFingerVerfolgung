@@ -1,7 +1,7 @@
 import cv2
 import mediapipe as mp
 
-
+# Import mediapipe hands module and hand drawing module
 class HandTracker:
     """
     Class to initialise a hand tracker. Can be used to find the image coordinates of certain hand landmarks
@@ -27,16 +27,17 @@ class HandTracker:
         :param draw: optional flag, if landmarks need to be drawn on image
         :return: image (with optionally drawn landmarks)
         """
-
-        image.flags.writeable = False  # temporarily disabled for performance
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)  # changed order of colors from BGR to RGB
+        # Temporarily disable writeable flag for performance
+        image.flags.writeable = False
+        # Change order of colors from BGR to RGB
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # Detect hands in the image
         self.results = self.hands.process(image)
-
-        # Draw the hand annotations on the image.
+        # Enable writeable flag
         image.flags.writeable = True
+        # Change order of colors back to BGR
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-
-        # Iterate over landmarks and mark them on the hand in the image
+        # Draw hand landmarks on image if desired
         if draw and self.results.multi_hand_landmarks:
             for hand_landmarks in self.results.multi_hand_landmarks:
                 self.mp_drawing.draw_landmarks(
@@ -52,26 +53,32 @@ class HandTracker:
         """
         function to find image coordinates of a certain hand
         :param image: used to get width and height
-        :param label:"Right" or "Left" allowed, if both hands should be returned, default value "None" must be applied
+        :param label: "Right" or "Left" allowed, if both hands should be returned, default value "None" must be applied
         :return: landmark list of hand in form [landmark_id, x, y]
         """
-
+        # Initialize empty list to store hand landmarks
         return_landmark_list = []
         if self.results.multi_hand_landmarks:
+            # Get image dimensions
             h, w, _ = image.shape
+            # Initialize lists to store hand landmarks and hand types
             hand_landmarks_list = []
             hands_type = []
 
+            # Iterate over detected hands and store their types
             for hand in self.results.multi_handedness:
                 hand_type = hand.classification[0].label
                 hands_type.append(hand_type)
 
+            # Iterate over detected hands and store their landmarks
             for hand_landmarks in self.results.multi_hand_landmarks:
                 hand_landmarks_list.append(hand_landmarks)
 
-                # iterate over all stored hand landmarks with hand type data
+            # Iterate over stored hand landmarks and hand types
             for hand_landmarks, hand_type in zip(hand_landmarks_list, hands_type):
+                # If hand type matches the specified label or label is set to "None"
                 if hand_type == label or label == "None":
+                    # Iterate over landmarks and store their image coordinates
                     for landmark_id, lm in enumerate(hand_landmarks.landmark):
                         cx, cy, z = int(lm.x * w), int(lm.y * h), lm.z
                         return_landmark_list.append([hand_type, landmark_id, (cx, cy, z)])

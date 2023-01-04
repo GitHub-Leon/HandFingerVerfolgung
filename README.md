@@ -14,14 +14,18 @@ This project aims to track the hand and finger movements of a user while they wo
    cd hand-finger-tracking
    ```
    
-3. Install the required packages:<br>
+3. Install the required packages listed in [requirements.txt](https://github.com/GitHub-Leon/HandFingerVerfolgung/blob/master/requirements.txt):
    ```bash
    pip install -r requirements.txt
    ```
-   
+
+4. Install the necessary libraries and versions for YOLOv5 with GPU usage
+   ```bash
+    pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio===0.13.1 -f https://download.pytorch.org/whl/torch_stable.html
+   ```
 ## Configuration
 
-You can configure the following options in the `config.ini` file:
+You can configure the following options in the [config.ini](https://github.com/GitHub-Leon/HandFingerVerfolgung/blob/master/config.ini) file:
 - `showImg`: set to `True` to display the webcam frames with the detected hand and finger landmarks and object detection. Set to `False` to disable this display.
 - `drawHandLandMarks`: set to `True` to draw the detected hand and finger landmarks on the webcam frames. Set to `False` to disable this.
 - `drawObjectDetection`: set to `True` to draw bounding boxes around the detected mouse and keyboard on the webcam frames. Set to `False` to disable this.
