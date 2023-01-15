@@ -19,8 +19,8 @@ class ObjectTracker:
         if self.use_yolov3:
             self.net = cv2.dnn.readNet('object_tracking/yolo-coco/yolov3.weights', 'object_tracking/yolo-coco/yolov3.cfg')
         else:
-            self.yolov5_model = torch.hub.load('ultralytics/yolov5', 'yolov5n', force_reload=True)
-            # self.yolov5_model = torch.hub.load('ultralytics/yolov5', 'custom', path='object_tracking/custom_model/best.pt')
+            self.yolov5_model = torch.hub.load('ultralytics/yolov5', 'yolov5n', device=self._check_for_gpu(), force_reload=True)
+            # self.yolov5_model = torch.hub.load('ultralytics/yolov5', 'custom', device=self._check_for_gpu(), path='object_tracking/custom_model/best.pt')
             self.init_model()
         self.classes = self.load_classes()  # classes specified in coco.names
 

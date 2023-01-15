@@ -35,10 +35,8 @@ def main():
     objectTracker = ObjectTracker(use_yolov3, showDebugMessage)
 
     cv2_count = 0  # only needed to draw picture process count on image when debugging
-    # time = []
 
     while cap.isOpened:  # while we capture the video, analyse each frame
-        # start = timeit.default_timer()
         success, image = cap.read()
 
         if not success:
@@ -62,12 +60,7 @@ def main():
         if showImg:
             cv2.imshow("Hand- und Fingerverfolgung", image)
 
-        # end = timeit.default_timer()
-        # time.append(end-start)
-        #
-        # if len(time[5:]) == 150:
-        #     print(sum([x for x in time[5:]]) / len(time[5:]))
-        cv2.waitKey(2)  # waits for a key interrupt x ms
+        cv2.waitKey(1)  # waits for a key interrupt x ms
 
     cap.release()
 
