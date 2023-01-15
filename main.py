@@ -27,8 +27,9 @@ def main():
     drawDetectedColor = config['DEFAULT'].getboolean('drawDetectedColor')
     drawPictureProcessCounter = config['DEFAULT'].getboolean('drawPictureProcessCounter')
     use_yolov3 = config['DEFAULT'].getboolean('use_yolov3')
+    correctZValues = config['DEFAULT'].getboolean('correctZValues')
 
-    database = Database()
+    database = Database(correctZValues)
     hand_distance_to_camera = HandDistanceToCamera(showDebugMessage)
     handTracker = HandTracker()
     objectTracker = ObjectTracker(use_yolov3, showDebugMessage)
