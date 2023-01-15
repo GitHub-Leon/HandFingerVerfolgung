@@ -2,6 +2,8 @@
 
 This project aims to track the hand and finger movements of a user while they work at a computer. The code captures live webcam frames, detects the hand and finger landmarks, calculates the distance of the hand to the camera, and tracks object detection (currently just a mouse and keyboard). The detected information is logged in a database.
 
+![Example](assets/handverfolgung.gif)
+
 ## Installation
 
 1. Install python 3.8 from the official website:<br>
