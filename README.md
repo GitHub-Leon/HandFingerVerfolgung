@@ -36,6 +36,7 @@ You can configure the following options in the [config.ini](https://github.com/G
 - `drawDetectedColor`: set to `True` to draw a circle around the dominant color detected in the bounding boxes of the detected mouse and keyboard. Set to `False` to disable this.
 - `storeInDB`: set to `True` to store the data in the database. Set to `False` to not save it.
 - `drawPictureProcessCounter`: set to `True` to draw the number of processed frames on the webcam frames. Set to `False` to disable this.
+- 'correctZValues': set to `True` to correct the Z Values of the landmarks depending on the settings in database.py. Set to `False` to disable this. 
 - `use_yolov3`: set to `True` to use the YOLOv3 object detector. Set to `False` to use YOLOv5.
 
 ## Usage
