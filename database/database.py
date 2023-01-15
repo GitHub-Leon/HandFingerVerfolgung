@@ -1,11 +1,17 @@
 import sqlite3
 import time
+import numpy as np
 
 
 class Database:
-    def __init__(self):
+    def __init__(self, correctZValues):
         self.con = sqlite3.connect("database/main_db")
         self.cursor = self.con.cursor()
+        self.correctZValues = correctZValues
+
+        self.moving_average = 20  # specify number of previous landmarks to save (for z value correction)
+        self.landmark_buffer = {}  # create buffer for each landmark type (for z value correction)
+        self.distance_threshold_moving_average = 0.2  # on 20% distance dif, we set the value to the moving average
 
         # create default values if no database was created yet
         if self.cursor.execute("""SELECT name FROM sqlite_master WHERE type='table' AND name='entry';""").fetchone() is None:
@@ -135,10 +141,29 @@ class Database:
 
     def __landmarks_entry(self, landmarks):
         """entry for landmarks [hand_id, landmark_typ_id, coordinates_id]"""
+
         for landmark in landmarks:  # ['Right', 3, (537, 239, -0.07019183784723282), 75]
-            self.__hand_entry(landmark[0], landmark[3])
-            self.__coordinates_entry(landmark[2][0], landmark[2][1], landmark[2][2])
-            self.cursor.execute("""INSERT INTO landmarks VALUES (?, ?, ?) """, (self.hand_id - 1, landmark[1], self.coordinates_id - 1))
+            hand_id = landmark[0]
+            landmark_typ_id = landmark[1]
+            coordinates = landmark[2]
+            self.__hand_entry(hand_id, landmark[3])
+
+            if self.correctZValues:
+                if landmark_typ_id not in self.landmark_buffer:  # if this is the first time seeing this landmark type
+                    self.landmark_buffer[landmark_typ_id] = np.array([coordinates[2]])  # create a new numpy array with this landmark type and add the current coordinates
+                else:
+                    self.landmark_buffer[landmark_typ_id] = np.append(self.landmark_buffer[landmark_typ_id], [coordinates[2]], axis=0)  # if this landmark type has been seen before, append the current coordinates
+                    if len(self.landmark_buffer[landmark_typ_id]) > self.moving_average:
+                        self.landmark_buffer[landmark_typ_id] = self.landmark_buffer[landmark_typ_id][-self.moving_average:]  # keep only the last x entries
+
+                avg_coordinates = np.mean(self.landmark_buffer[landmark_typ_id], axis=0)  # calculate average coordinates
+
+                if coordinates[2] < (1-self.distance_threshold_moving_average) * avg_coordinates or coordinates[2] > (1+self.distance_threshold_moving_average) * avg_coordinates:
+                    coordinates = coordinates[:2] + (avg_coordinates,) + coordinates[3:]
+
+            self.__coordinates_entry(coordinates[0], coordinates[1], coordinates[2])
+            self.cursor.execute("""INSERT INTO landmarks VALUES (?, ?, ?) """, (self.hand_id - 1, landmark_typ_id, self.coordinates_id - 1))
+
 
     def __create_landmark_types_table(self):
         """entry for landmark types [landmark_typ_id, name]"""
