@@ -1,4 +1,6 @@
 mediapipe==0.8.11
-numpy==1.19.5
-pywin32==304
+numpy==1.24.1
 matplotlib==3.3.4
+PyAutoGUI==0.9.53
+opencv-python==4.7.0.68
+pandas==1.5.2

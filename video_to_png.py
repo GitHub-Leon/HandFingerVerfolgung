@@ -6,7 +6,6 @@ import cv2
 This script is used to convert a video into single frames to use them for annotation when training a custom model
 """
 
-
 # Create the output folder if it doesn't exist
 if not os.path.exists("object_tracking/custom_model/training_frames"):
     os.makedirs("object_tracking/custom_model/training_frames")

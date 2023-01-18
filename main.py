@@ -3,12 +3,9 @@ import configparser
 import cv2
 
 from database.database import Database
-from hand_tracking.drawing.draw_on_image import draw_polyline
+from hand_tracking.hand_distance_to_camera import HandDistanceToCamera
 from hand_tracking.hand_tracker import HandTracker
 from object_tracking.object_tracker import ObjectTracker
-from hand_tracking.drawing.plot import plot_data, plot_distance
-from hand_tracking.hand_distance_to_camera import HandDistanceToCamera
-
 
 
 def main():
@@ -19,7 +16,6 @@ def main():
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
     cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
 
-
     config = configparser.ConfigParser()
 
     config.read('config.ini')
@@ -27,15 +23,16 @@ def main():
     drawHandLandMarks = config['DEFAULT'].getboolean('drawHandLandMarks')
     drawObjectDetection = config['DEFAULT'].getboolean('drawObjectDetection')
     showDebugMessage = config['DEFAULT'].getboolean('showDebugMessages')
+    storeInDB = config['DEFAULT'].getboolean('storeInDB')
     drawDetectedColor = config['DEFAULT'].getboolean('drawDetectedColor')
     drawPictureProcessCounter = config['DEFAULT'].getboolean('drawPictureProcessCounter')
+    use_yolov3 = config['DEFAULT'].getboolean('use_yolov3')
+    correctZValues = config['DEFAULT'].getboolean('correctZValues')
 
-
-    database = Database()
+    database = Database(correctZValues)
     hand_distance_to_camera = HandDistanceToCamera(showDebugMessage)
     handTracker = HandTracker()
-    objectTracker = ObjectTracker()
-
+    objectTracker = ObjectTracker(use_yolov3, showDebugMessage)
 
     cv2_count = 0  # only needed to draw picture process count on image when debugging
 
@@ -43,17 +40,16 @@ def main():
         success, image = cap.read()
 
         if not success:
-            print("Ignoring empty frame.")
+            if showDebugMessage:
+                print("Ignoring empty frame.")
             continue
 
         image = handTracker.hands_finder(cv2.flip(image, 1), drawHandLandMarks)
         landmark_list = handTracker.position_finder(image)
         landmark_list = hand_distance_to_camera.calculate_distance(landmark_list)
-        objectTracker.mouse_finder(landmark_list, image, drawDetectedColor)
-        image = objectTracker.object_finder(image, drawObjectDetection)  # flip image, to display selfie view
-        database.database_entry(landmark_list, objectTracker.mouse_box,
-                                objectTracker.keyboard_box)  # log everything in DB
-
+        image = objectTracker.object_finder(image, landmark_list, drawObjectDetection, drawDetectedColor)  # flip image, to display selfie view
+        if storeInDB:
+            database.database_entry(landmark_list, objectTracker.mouse_box, objectTracker.keyboard_box)  # log everything in DB
 
         # show number of processed picture on screen
         if drawPictureProcessCounter:
@@ -64,7 +60,7 @@ def main():
         if showImg:
             cv2.imshow("Hand- und Fingerverfolgung", image)
 
-        cv2.waitKey(30)  # frame updates per second
+        cv2.waitKey(1)  # waits for a key interrupt x ms
 
     cap.release()
 
