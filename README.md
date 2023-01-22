@@ -8,28 +8,40 @@ This project aims to track the hand and finger movements of a user while they wo
 
 ## Installation
 
-1. Install python 3.8 from the official website:<br>
-   https://www.python.org/downloads/
 
-2. Clone the repository to your local machine:<br>
-   ```bash
-   git clone https://github.com/GitHub-Leon/hand-finger-tracking.git
-   ```
-
-3. Go to the file<br>
-   ```bash
-   cd hand-finger-tracking
-   ```
+1. Install Conda for python 3.8<br>
+   https://docs.conda.io/en/latest/miniconda.html
    
-4. Install the required packages listed in [requirements.txt](https://github.com/GitHub-Leon/HandFingerVerfolgung/blob/master/requirements.txt):
+
+2. Install Python 3.8 via Conda
    ```bash
-   pip install -r requirements.txt
+   conda install python=3.8
    ```
 
-5. Install the necessary libraries and versions for YOLOv5 with GPU usage
+3. Clone the repository to your local machine:<br>
+   ```bash
+   git clone https://github.com/GitHub-Leon/HandFingerVerfolgung.git
+   ```
+
+4. Cd into the directory
+
+
+5. Install pip
+   ```
+   conda install pip
+   ```
+
+6. Install the required packages listed in [requirements_mac.txt](https://github.com/GitHub-Leon/HandFingerVerfolgung/blob/master/requirements_mac.txt) for macs with apple chips and [requirements.txt](https://github.com/GitHub-Leon/HandFingerVerfolgung/blob/master/requirements.txt) for the others:
+   ```bash
+   pip install -r requirements_mac.txt
+   ```
+
+7. Install the necessary libraries and versions for YOLOv5 with GPU usage
    ```bash
     pip install torch==1.13.1+cu117 torchvision==0.14.1+cu117 torchaudio===0.13.1 -f https://download.pytorch.org/whl/torch_stable.html
    ```
+   
+
 ## Configuration
 
 You can configure the following options in the [config.ini](https://github.com/GitHub-Leon/HandFingerVerfolgung/blob/master/config.ini) file:
