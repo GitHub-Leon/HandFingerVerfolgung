@@ -29,7 +29,7 @@ This project aims to track the hand and finger movements of a user while they wo
 5. Activate venv
    ```
    conda activate venv_name
-   ``
+   ```
 
 6. Install the required packages listed in [requirements_mac.txt](https://github.com/GitHub-Leon/HandFingerVerfolgung/blob/master/requirements_mac.txt) for macs with apple chips and [requirements.txt](https://github.com/GitHub-Leon/HandFingerVerfolgung/blob/master/requirements.txt) for the others:
    ```bash
