@@ -13,27 +13,27 @@ This project aims to track the hand and finger movements of a user while they wo
    https://docs.conda.io/en/latest/miniconda.html
    
 
-2. Install Python 3.8 via Conda
-   ```bash
-   conda install python=3.8
-   ```
-
-3. Clone the repository to your local machine:<br>
+2. Clone the repository to your local machine:<br>
    ```bash
    git clone https://github.com/GitHub-Leon/HandFingerVerfolgung.git
    ```
 
-4. Cd into the directory
+3. Cd into the directory
 
 
-5. Install pip
+4. Create Venv
    ```
-   conda install pip
+   conda create --name venv_name python=3.8
    ```
+
+5. Activate venv
+   ```
+   conda activate venv_name
+   ``
 
 6. Install the required packages listed in [requirements_mac.txt](https://github.com/GitHub-Leon/HandFingerVerfolgung/blob/master/requirements_mac.txt) for macs with apple chips and [requirements.txt](https://github.com/GitHub-Leon/HandFingerVerfolgung/blob/master/requirements.txt) for the others:
    ```bash
-   pip install -r requirements_mac.txt
+   pip install -r requirements.txt
    ```
 
 7. Install the necessary libraries and versions for YOLOv5 with GPU usage
