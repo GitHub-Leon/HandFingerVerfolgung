@@ -9,12 +9,7 @@ from object_tracking.object_tracker import ObjectTracker
 
 
 def main():
-    cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)  # capture live webcam frames
-    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('m', 'j', 'p', 'g'))
-    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter.fourcc('M', 'J', 'P', 'G'))
-    cap.set(cv2.CAP_PROP_FPS, 30.0)
-    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
-    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 720)
+    cap = cv2.VideoCapture(0)  # capture live webcam frames
 
     config = configparser.ConfigParser()
 

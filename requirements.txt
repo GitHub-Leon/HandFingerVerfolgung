@@ -4,3 +4,7 @@ matplotlib==3.3.4
 PyAutoGUI==0.9.53
 opencv-python==4.7.0.68
 pandas==1.5.2
+ipython
+psutil
+pyyaml
+seaborn
