@@ -18,7 +18,7 @@ This project aims to track the hand and finger movements of a user while they wo
    git clone https://github.com/GitHub-Leon/HandFingerVerfolgung.git
    ```
 
-3. Cd into the directory
+3. Open the conda terminal and cd into the directory
 
 
 4. Create Venv
