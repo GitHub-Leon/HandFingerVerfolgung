@@ -4,7 +4,7 @@ import math
 class HandDistanceToCamera:
     def __init__(self, showDebugMessage):
         self.showDebugMessage = showDebugMessage
-        self.KNOWN_DISTANCE = 750  # initialize the known distance from the camera to the object, which
+        self.KNOWN_DISTANCE = 750  # initialize the known distance from the camera to the hand, which in this case is 75cm (750mm)
         self.KNOWN_WIDTH_5_17 = 60  # initialize the known object width, which in this case is the distance in mm between landmark 5 and 17
         self.KNOWN_WIDTH_0_17 = 100  # initialize the known object width, which in this case is the distance in mm between landmark 0 and 17
         self.left_focal_length_5_17 = None

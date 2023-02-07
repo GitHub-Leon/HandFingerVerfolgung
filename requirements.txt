@@ -8,3 +8,4 @@ ipython
 psutil
 pyyaml
 seaborn
+tqdm

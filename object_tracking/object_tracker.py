@@ -11,7 +11,7 @@ class ObjectTracker:
     Class to initialise a object tracker. Can be used to find the image coordinates of keyboard and mouse
     """
 
-    def __init__(self, use_yolov3, showDebugMessage, detection_con=0.3, detection_threshold=0.2):
+    def __init__(self, use_yolov3, showDebugMessage, detection_con=0.15, detection_threshold=0.2):
         self.use_yolov3 = use_yolov3
         self.showDebugMessage = showDebugMessage
         self.detection_con = detection_con
@@ -181,8 +181,8 @@ class ObjectTracker:
                 if device[0] == label:
                     dx, dy, dw, dh = device[2]
 
-                    if (x > dx * 1.2 or x < dx * 0.8 or y > dy * 1.2 or y < dy * 0.8) or device[1] < confidence:  # check if detected keyboard is way off currently saved one or if the confidence is higher than the saved one
-                        if (dw * dh * self.replacement_threshold) < (w * h) < (dw * dh * ((1 - self.replacement_threshold) + 1)):  # if the new box is far smaller than allowed, dont update it (possibility of false detection)
+                    if (x > dx * 1.05 or x < dx * 0.95 or y > dy * 1.05 or y < dy * 0.95) or device[1] < confidence or True:  # check if detected keyboard is way off currently saved one or if the confidence is higher than the saved one # currently 'or True' because of issues
+                        if (dw * dh * self.replacement_threshold) < (w * h):  # if the new box is far smaller than allowed, dont update it (possibility of false detection)
                             self.keyboard_box.remove(device)
                             self.keyboard_box.append([label, confidence, (x, y, w, h)])
                         break
