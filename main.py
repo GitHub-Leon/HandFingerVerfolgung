@@ -41,12 +41,16 @@ def main():
                 print("Ignoring empty frame.")
             continue
 
-        image = handTracker.hands_finder(cv2.flip(image, 1), drawHandLandMarks)
-        landmark_list = handTracker.position_finder(image)
-        landmark_list = hand_distance_to_camera.calculate_distance(landmark_list)
-        image = objectTracker.object_finder(image, landmark_list, drawObjectDetection, drawDetectedColor)  # flip image, to display selfie view
-        if storeInDB:
-            database.database_entry(landmark_list, objectTracker.mouse_box, objectTracker.keyboard_box)  # log everything in DB
+        try:
+            image = handTracker.hands_finder(cv2.flip(image, 1), drawHandLandMarks)
+            landmark_list = handTracker.position_finder(image)
+            landmark_list = hand_distance_to_camera.calculate_distance(landmark_list)
+            image = objectTracker.object_finder(image, landmark_list, drawObjectDetection, drawDetectedColor)  # flip image, to display selfie view
+            if storeInDB:
+                database.database_entry(landmark_list, objectTracker.mouse_box, objectTracker.keyboard_box)  # log everything in DB
+        except Exception as e:
+            # don't log anything, if an error occurs
+            pass
 
         # show number of processed picture on screen
         if drawPictureProcessCounter:
